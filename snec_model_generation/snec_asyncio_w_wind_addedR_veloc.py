@@ -140,17 +140,4 @@ async def main():
                            for R_CSM in [1000]
                            ])
 
-    # semaphore = asyncio.BoundedSemaphore(16)
-    # await asyncio.gather(*[snec(Mzams, Ni_mass, E_final, Ni_boundary, R_CSM, K_CSM, semaphore)
-    #                        for Mzams in [10.0]
-    #                        for E_final in [0.5, 0.3, 0.1]
-    #                        for Ni_mass in [0.001, 0.02, 0.07, 0.12]
-    #                        for Ni_boundary in [2.0, 8.0]
-    #                        for K_CSM in [0, 10, 30, 60]
-    #                        for R_CSM in [0, 500, 1000, 2000]
-    #                        ])
-
-
-
-
 asyncio.run(main())
