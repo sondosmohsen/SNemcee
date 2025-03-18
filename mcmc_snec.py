@@ -14,18 +14,19 @@ matplotlib.use('Agg')
 
 
 
-'''
-parts of this code are based on code by Griffin Hosseinzadeh
-'''
-
 plt.rc('font', size=20)          # controls default text sizes
 plt.rc('axes', titlesize=20)     # fontsize of the axes title
 plt.rc('axes', labelsize=20)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=20)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=20)    # fontsize of the tick labels
+plt.rc('xtick', labelsize=16)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=16)    # fontsize of the tick labels
 plt.rc('legend', fontsize=14)    # legend fontsize
 plt.rc('figure', titlesize=30)  # fontsize of the figure title
 plt.rcParams['font.sans-serif'] = 'Arial'
+plt.rcParams['xtick.major.pad']='0.2' #sondos added this to make spacing between the ticklables and axes in the corner plots
+plt.rcParams['ytick.major.pad']='0.2' #sondos added this to make spacing between the ticklables and axes in the corner plots
+
+
+
 
 colors = {'u': 'purple', 'g': 'teal', 'r': 'red', 'i': 'maroon', 'z': 'black', 'U': 'purple',
           'B': 'blue', 'V': 'green', 'R': 'red', 'I': 'maroon'}
@@ -51,11 +52,12 @@ def polyfit_to_distribution(array_walker_results, res_dir):
     dense_x = np.arange(np.min(x), np.max(x), (np.max(x)-np.min(x))/50)
     ax.plot(dense_x, [polymod(i) for i in dense_x], color='orange')
     fig.savefig(os.path.join(res_dir, str(name)+'_first_step_dist.png'))
+    fig.savefig(os.path.join(res_dir, str(name) + '_first_step_dist.pdf'))
     return polymod
 
 
-def load_surrounding_models(requested, ranges_dict, fitting_type, LumTthreshold=False):
-    mod.load_surrounding_models_local(models, requested, ranges_dict, fitting_type, LumTthreshold)
+def load_surrounding_models(requested, ranges_dict, fitting_type, LumThreshold=False):
+    mod.load_surrounding_models_local(models, requested, ranges_dict, fitting_type, LumThreshold)
 
 
 def theta_in_range(theta, ranges_dict):
@@ -86,7 +88,7 @@ def log_prior(theta, ranges_dict, nonuniform_priors=None):
                     R : [0.1, 0.1],
                     K : [0.1, 0.1],
                     S : [0.8, 1.2],
-                    T : [-15, +15]}
+                    T : no days to model[-15, +15]}
     """
     if not theta_in_range(theta, ranges_dict):
         return -np.inf
@@ -128,8 +130,6 @@ def interp_yfit(theta, ranges_dict, fitting_type, data_x, filter=False):
     return y_fit
 
 
-# TODO this step can introduce some bias - SNe that don't have early velocities
-#  will select against models that cool fast
 def temp_thresh_cutoff(requested_theta, ranges_dict, data_x):
     temp_fit = interp_yfit(requested_theta, ranges_dict, 'temp', data_x)
     max_x = 0
@@ -151,11 +151,11 @@ def calc_likelihood(data_x, data_y, data_dy, y_fit, normalization):
     return chi2.logpdf(chi_square_norm(data_x, data_y, data_dy, data_x, y_fit), df) / norm
 
 
-def calc_lum_likelihood(theta, data_dict, ranges_dict, normalization, LumTthreshold=False):
+def calc_lum_likelihood(theta, data_dict, ranges_dict, normalization, LumThreshold=False):
     data = data_dict['lum']
     data_x = data['t_from_discovery']
     data_x_moved = data_x - theta[7]
-    if LumTthreshold:
+    if LumThreshold:
         max_x, temp_fit = temp_thresh_cutoff(theta[0:6], ranges_dict, data_x_moved)
         data = data.loc[data_x_moved <= max_x]
         data_x_moved = data_x_moved[data_x_moved <= max_x]
@@ -224,7 +224,7 @@ def calc_mag_likelihood(theta, data_dict, ranges_dict, normalization):
         return - np.inf
 
 
-def log_likelihood(theta, data, ranges_dict, fitting_type, LumTthreshold, normalization):
+def log_likelihood(theta, data, ranges_dict, fitting_type, LumThreshold, normalization):
     """
     Parameters
     ----------
@@ -239,17 +239,22 @@ def log_likelihood(theta, data, ranges_dict, fitting_type, LumTthreshold, normal
     # print(ranges_list)
     if theta_in_range(theta, ranges_dict):
         # print('ok SN')
-        load_surrounding_models(theta[0:6], ranges_dict, fitting_type, LumTthreshold)
+        load_surrounding_models(theta[0:6], ranges_dict, fitting_type, LumThreshold)
         args = [theta, data, ranges_dict, normalization]
         log_likeli = 0
+        if_flag = 0
         if 'lum' in fitting_type:
-            args.append(LumTthreshold)
+            #args.append(LumThreshold)       #is this neccesarily? the code doesnt run with this line:
+            #                                 TypeError:calc_veloc_likelihood() takes 4 positional arguments but 5 were given
             log_likeli += calc_lum_likelihood(*args)
-        elif 'mag' in fitting_type:
-            log_likeli = calc_mag_likelihood(*args)
-        elif 'veloc' in fitting_type:
-            log_likeli = calc_veloc_likelihood(*args)
-        else:
+            if_flag = 1
+        if 'mag' in fitting_type:
+            log_likeli += calc_mag_likelihood(*args)
+            if_flag = 2
+        if 'veloc' in fitting_type:
+            log_likeli += calc_veloc_likelihood(*args)
+            if_flag = 3
+        if if_flag == 0:
             print('fitting_type should be: lum, mag, veloc, or a combination of those separated by a dash')
     else:
         # print('log lik')
@@ -261,12 +266,13 @@ def log_likelihood(theta, data, ranges_dict, fitting_type, LumTthreshold, normal
     return log_likeli
 
 
-def log_posterior(theta, data, ranges_dict, fitting_type, csm, LumTthreshold, normalization, nonuniform_priors):
+
+def log_posterior(theta, data, ranges_dict, fitting_type, csm, LumThreshold, normalization, nonuniform_priors):
     if not csm:
         theta =list(np.insert(theta, 3, np.zeros((2,)), axis=0))
     if theta_in_range(theta, ranges_dict):
         lp = log_prior(theta, ranges_dict, nonuniform_priors)
-        ll = log_likelihood(theta, data, ranges_dict, fitting_type, LumTthreshold, normalization)
+        ll = log_likelihood(theta, data, ranges_dict, fitting_type, LumThreshold, normalization)
         log_post = lp + ll
         # print('logpost', log_post)
         return log_post
@@ -337,7 +343,7 @@ def save_param_results(sampler_chain, ranges_dict, step, res_dir):
     return dict
 
 
-def write_params_file(parameter_ranges, SN_name, n_walkers, n_steps, csm, LumTthreshold, normalization, burn_in, time_now, output_dir):
+def write_params_file(parameter_ranges, SN_name, n_walkers, n_steps, csm, LumThreshold, normalization, burn_in, time_now, output_dir):
     run_param_df = pd.DataFrame.from_dict({'SN_name': SN_name,
                                            'Mzams_range': str(parameter_ranges['Mzams']),
                                            'Ni_range': str(parameter_ranges['Ni']),
@@ -351,7 +357,7 @@ def write_params_file(parameter_ranges, SN_name, n_walkers, n_steps, csm, LumTth
                                            'burn_in': burn_in,
                                            'csm': csm,
                                            'normalization': normalization,
-                                           'Tthreshold_lum' : LumTthreshold,
+                                           'Tthreshold_lum' : LumThreshold,
                                            'time': time_now}, orient='index')
     run_param_df.to_csv(os.path.join(output_dir, 'run_parameters.csv'))
 
@@ -394,7 +400,7 @@ def import_mag(SN_name):
     return data_mag
 
 
-def emcee_fit_params(SN_name, res_dir, n_walkers, n_steps, burn_in, ranges_dict, fitting_type, csm, LumTthreshold=False,
+def emcee_fit_params(SN_name, res_dir, n_walkers, n_steps, burn_in, ranges_dict, fitting_type, csm, LumThreshold=False,
                      normalization=False, nonuniform_priors=None, init_guesses=None):
     if csm:
         n_params = 8
@@ -406,14 +412,20 @@ def emcee_fit_params(SN_name, res_dir, n_walkers, n_steps, burn_in, ranges_dict,
     data = load_SN_data(fitting_type, SN_name)
     time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     write_params_file(ranges_dict, SN_name, n_walkers, n_steps,
-                                csm, LumTthreshold, normalization, burn_in, time_now, res_dir)
+                                csm, LumThreshold, normalization, burn_in, time_now, res_dir)
 
     sampler = emcee.EnsembleSampler(n_walkers, n_params, log_posterior,
-                                    args=[data, ranges_dict, fitting_type, csm, LumTthreshold, normalization, nonuniform_priors])
+                                    args=[data, ranges_dict, fitting_type, csm, LumThreshold, normalization, nonuniform_priors])
     sampler.run_mcmc(init_guesses, n_steps)
+    log_likelihoods = sampler.get_log_prob(flat=True)
+    df = pd.DataFrame(log_likelihoods, columns=["log_likelihood"])
+    # Remove rows with invalid values (inf, -inf, NaN)
+    df_clean = df.replace([np.inf, -np.inf], np.nan).dropna()
+    output_file = os.path.join(res_dir, "log_likelihoods.csv")
+    # Save DataFrame to CSV
+    df_clean.to_csv(output_file, index=False)
     return sampler
 
 
 def initialize_empty_models(ranges_dict):
     mod.initialize_empty_models_dict(models, ranges_dict)
-

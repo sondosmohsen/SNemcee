@@ -6,8 +6,8 @@ import os
 
 CORNER_KWARGS = dict(
     smooth=0.9,
-    label_kwargs=dict(fontsize=16),
-    title_kwargs=dict(fontsize=16),
+    label_kwargs=dict(fontsize=19),
+    title_kwargs=dict(fontsize=19),
     quantiles=[0.05, 0.95],
     levels=(1 - np.exp(-0.5), 1 - np.exp(-2), 1 - np.exp(-9 / 2.)),
     plot_density=False,
@@ -16,7 +16,6 @@ CORNER_KWARGS = dict(
     # show_titles=True,
     # max_n_ticks=3,
 )
-
 
 def overlaid_corner(samples_list, sample_labels, corner_range, param_labels, output_dir, filename):
     """Plots multiple corners on top of each other"""
@@ -47,10 +46,11 @@ def overlaid_corner(samples_list, sample_labels, corner_range, param_labels, out
             mlines.Line2D([], [], color=colors[i], label=sample_labels[i])
             for i in range(n)
         ],
-        fontsize=20, frameon=False,
+        fontsize=28, frameon=False,
         bbox_to_anchor=(1, ndim), loc="upper right"
     )
-    plt.savefig(os.path.join(output_dir, filename+'_corner.png'))
+    #plt.savefig(os.path.join(output_dir, filename+'_corner.png'))
+    plt.savefig(os.path.join(output_dir, filename + '_corner.pdf'))
     plt.close()
 
 

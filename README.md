@@ -90,4 +90,4 @@ Output files will be stored in ‘/mcmc/figures/<output directory>/<number of wa
 Output files will include summary figures: <br>
 Comparison of fits of final models for each run-type compared, including the input observation data for that SN (all walkers, and steps after burn-in) <br>
 Comparison corner plot with the posterior distributions for each run-type, overlaid on top of each-other <br>
-    
+    # SNemcee

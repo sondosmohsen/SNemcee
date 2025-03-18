@@ -7,14 +7,13 @@ import mcmc_snec
 import re
 import copy
 import colorful_corner_plot as color_corner
-# TODO add walker traces plots
 
-T_thresh = 10 ** 3.5
+T_thresh = 10 ** 3.5   #(recombination)
 extend_tail = False
 # filters = ['u', 'g', 'r', 'i', 'z', 'U', 'B', 'V', 'R', 'I']
 filters = ['g', 'r', 'i', 'z', 'B', 'V', 'R', 'I']
-colors = {'u': 'purple', 'g': 'teal', 'r': 'red', 'i': 'maroon', 'z': 'black', 'U': 'purple',
-          'B': 'blue', 'V': 'green', 'R': 'red', 'I': 'maroon'}
+colors = {'u': 'indigo', 'g': 'green', 'r': 'red', 'i': 'dimgrey', 'z': 'black', 'U': 'purple',
+          'B': 'blue', 'V': 'darkviolet', 'R': 'darkorange', 'I': 'cyan'}
 
 
 
@@ -92,6 +91,7 @@ def open_reshape_3d_array(output_dir, type, step):
     array_3d = array_2d.reshape((shape_2d[0], 2, shape_2d[1]/2))
     return array_3d
 
+
 def add_model_martinez(SN_name, ranges_dict, x_data, y_data, dy_data, fig_type, ax):
     martinez_path = os.path.join('SN_data', 'martinez_results_table.csv')
     martinez_df = pd.read_csv(martinez_path)
@@ -104,34 +104,41 @@ def add_model_martinez(SN_name, ranges_dict, x_data, y_data, dy_data, fig_type, 
     T = requested[7]
     data_x_moved = x_data - T
     x_plotting = np.linspace(-T, 200 - T, 2001)
+    # Restrict x_plotting to the range of x_data for velocity
+    #x_plotting_veloc = x_plotting[x_plotting <= x_data.max()] (עד הדאטא)
+    x_plotting_veloc = x_plotting[x_plotting <=125]
+
     y_fit_plotting = mcmc_snec.interp_yfit(requested, ranges_dict, fig_type, x_plotting)
     y_fit_on_data_times = mcmc_snec.interp_yfit(requested, ranges_dict, fig_type, data_x_moved)
     if not isinstance(y_fit_plotting, str):
         if fig_type == 'lum':
             y_fit_plotting = y_fit_plotting * S
             y_fit_on_data_times = y_fit_on_data_times * S
-            ax.plot(x_plotting, np.log10(y_fit_plotting), alpha=0.1, color='orange')
+            ax.plot(x_plotting, np.log10(y_fit_plotting), alpha=0.8, color='orange')
         elif fig_type == 'veloc':
-            ax.plot(x_plotting, y_fit_plotting, alpha=0.1, color='purple')
+            #ax.plot(x_plotting, y_fit_plotting, alpha=0.8, color='orange') #default color='purple'
+            # Only plot the orange curve up to the end of the data
+            y_fit_plotting_veloc = mcmc_snec.interp_yfit(requested, ranges_dict, fig_type, x_plotting_veloc)
+            ax.plot(x_plotting_veloc, y_fit_plotting_veloc, alpha=0.8, color='orange')
         else:
             print('fig_type must be lum or veloc')
         log_likeli.append(
-            mcmc_snec.calc_likelihood(data_x_moved, y_data, dy_data, y_fit_on_data_times,normalization=False))
+            mcmc_snec.calc_likelihood(data_x_moved, y_data, dy_data, y_fit_on_data_times, normalization=False))
     log_likeli = np.mean(log_likeli)
-    param_dict = dict(results_row.iloc[0])
-    # TODO maybe this will be read as strings instead of numbers
+    #param_dict = dict(results_row.iloc[0])     #replaced this with: #sondos (ask noi to make sure)
+    param_dict = {column_name: value for column_name, value in results_row.items()}
     results_text = result_text_from_dict(param_dict, ranges_dict)
     handles, labels = plt.gca().get_legend_handles_labels()
-    # TODO maybe the position of the legends will overlap
     SNemcee_fit_lengend = Line2D([0], [0], label=results_text, color='orange')
     handles.extend([SNemcee_fit_lengend])
-    ax.legend(handles=handles, fontsize=10)
+    ax.legend(handles=handles, fontsize=12)
     output_dir = os.path.join('figures', 'martinez')
     add_likelihood_to_file(SN_name+'_martinez', 'lum', log_likeli, output_dir)
     return ax
 
 
-def plot_lum_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumTthreshold, add_martinez=False):
+
+def plot_lum_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumThreshold, add_martinez=False):
     data = data_dict['lum']
     data_x = data['t_from_discovery']
     data_y = data['Lum']
@@ -144,7 +151,7 @@ def plot_lum_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax
         if mcmc_snec.theta_in_range(requested, ranges_dict):
             data_x_moved = data_x - T
             data_tempthresh = copy.deepcopy(data)
-            if LumTthreshold:
+            if LumThreshold:
                 max_x, temp_fit = mcmc_snec.temp_thresh_cutoff(requested[0:6], ranges_dict, data_x_moved)
                 data_tempthresh = data_tempthresh.loc[data_x_moved <= max_x]
                 data_x_moved = data_tempthresh['t_from_discovery'] - T
@@ -171,13 +178,13 @@ def plot_lum_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax
     SNemcee_fit_lengend = Line2D([0], [0], label=results_text, color='purple')
     handles.extend([SNemcee_fit_lengend])
     ax.legend(handles=handles, fontsize=10)
-    ax.set_xlim(-2, 200)
+    ax.set_xlim(-2, 200)   #here
     ax.set_ylim(top=43.5)
     ax.tick_params(axis='both', which='major', labelsize=10)
     return ax, log_likeli
 
 
-def plot_veloc_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumTthreshold, add_martinez=False):
+def plot_veloc_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumThreshold, add_martinez=False):
     data = data_dict['veloc']
     data_x = data['t_from_discovery']
     data_y = data['veloc']
@@ -209,13 +216,16 @@ def plot_veloc_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, 
     return ax, log_likeli
 
 
-def plot_mag_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumTthreshold, add_martinez):
+def plot_mag_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumThreshold, add_martinez):
     data = data_dict['mag']
     filters = list(data['filter'].unique())
     data_x = data['t_from_discovery']
     y_fit_plotting = {}
     y_fit_on_data_times = {}
     log_likeli = []
+
+    # Setting a uniform offset for each filter.
+    offsets = {filt: 1.0 * i for i, filt in enumerate(filters)}
     for i in range(n_walkers):
         [Mzams, Ni, E, R, K, Mix, S, T] = sampler_df.iloc[i]
         requested = [Mzams, Ni, E, R, K, Mix, S, T]
@@ -226,34 +236,44 @@ def plot_mag_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax
             max_x, temp_fit = mcmc_snec.temp_thresh_cutoff(requested[0:6], ranges_dict, data_x_moved)
             data_tempthresh = data_tempthresh.loc[data_x_moved <= max_x]
             x_plotting = np.linspace(-T, max_x, int(1 + max_x * 10))
+
             for filt in filters:
+                offset = offsets[filt]
                 data_filt = data_tempthresh.loc[data_tempthresh['filter'] == filt]
                 data_x_filt_moved = data_filt['t_from_discovery'] - T
                 data_y_filt = data_filt['abs_mag']
                 data_dy_filt = data_filt['dmag']
                 y_fit_plotting[filt] = mcmc_snec.interp_yfit(requested, ranges_dict, 'mag', x_plotting, filt)
                 y_fit_on_data_times[filt] = mcmc_snec.interp_yfit(requested, ranges_dict, 'mag', data_x_filt_moved, filt)
+                # multiply whole graph by scaling factor
                 if not isinstance(y_fit_plotting[filt], str):
-                    # multiply whole graph by scaling factor
-                    y_fit_plotting[filt] = y_fit_plotting[filt] -2.5*np.log10(S)
-                    y_fit_on_data_times[filt] = y_fit_on_data_times[filt] - 2.5 * np.log10(S)
-                    ax.plot(x_plotting, y_fit_plotting[filt], color=colors[filt], alpha=0.1)
-                    log_likeli.append(mcmc_snec.calc_likelihood(data_x_filt_moved, data_y_filt, data_dy_filt,
-                                                                y_fit_on_data_times[filt], normalization))
+                    y_fit_plotting[filt] = y_fit_plotting[filt] - 2.5*np.log10(S)
+                    y_fit_on_data_times[filt] = y_fit_on_data_times[filt] - 2.5*np.log10(S)
+                    ax.plot(x_plotting, y_fit_plotting[filt] + offset, color=colors[filt], alpha=0.1)
+                    log_likeli.append(mcmc_snec.calc_likelihood(
+                        data_x_filt_moved, data_y_filt, data_dy_filt, y_fit_on_data_times[filt], normalization
+                    ))
+
     log_likeli = np.mean(log_likeli)
+    # log_likeli = np.sum(log_likeli)
     for filt in filters:
+        offset = offsets[filt]
         data_filt = data.loc[data['filter'] == filt]
         data_x = data_filt['t_from_discovery']
-        data_y = data_filt['abs_mag']
+        data_y = data_filt['abs_mag'] - 2.5 * np.log10(S) + offset
         data_dy = data_filt['dmag']
-        ax.errorbar(data_x, data_y, yerr=data_dy, marker='o', linestyle='None',
-                    label=filt, color=colors[filt])
+
+        label = f'{filt} + {offset:.1f}' if offset != 0 else filt
+        ax.errorbar(data_x, data_y, yerr=data_dy, marker='o', linestyle='None', label=label, color=colors[filt])
+
     ax.legend()
     ax.set_xlim(-2, 200)
     ax.invert_yaxis()
-    ax.set_ylim(-14, -19)
+    ax.set_ylim(-8, -19)
     ax.tick_params(axis='both', which='major', labelsize=10)
+
     return ax, log_likeli
+
 
 
 def range_bounds(ranges_list):
@@ -287,8 +307,8 @@ def overlay_corner_plot(result_paths_list, output_dir, name_list, filename):
         corner_range,
         labels,
         output_dir, filename)
-    # f_corner = corner.corner(sampler_chain_flat, labels=labels, range=corner_range)
-    # f_corner.savefig(os.path.join(output_dir, 'corner_plot.png'))
+     #f_corner = corner.corner(sampler_chain_flat, labels=labels, range=corner_range)
+     #f_corner.savefig(os.path.join(output_dir, 'corner_plot.png'))
 
 
 def string_to_bool(mystr):
@@ -297,7 +317,6 @@ def string_to_bool(mystr):
     else:
         return True
 
-# TODO adapt these two below to work in plot_snec_fits (it was in mcmc_snec)
 
 def get_each_walker_result(sampler_chain, ranges_dict, step):
     params = list(ranges_dict.keys())
@@ -344,18 +363,17 @@ def get_args_from_file(result_path, ax, data_type, add_martinez=False):
     ranges_dict = import_ranges(run_params.columns.values, run_params)
     params = ranges_dict.keys()
     SN_name = run_params.iloc[0]['SN_name']
-    # TODO shoud this be n_steps or n_steps-1?
     # step = run_params.iloc[0]['n_steps']
     n_walkers = int(run_params.iloc[0]['n_walkers'])
     burn_in = int(run_params.iloc[0]['burn_in'])
     normalization = run_params.iloc[0]['normalization']
-    LumTthreshold = string_to_bool(run_params.iloc[0]['Tthreshold_lum'])
+    LumThreshold = string_to_bool(run_params.iloc[0]['Tthreshold_lum'])
     data_dict = mcmc_snec.load_SN_data(data_type, SN_name)
     flat_sampler_path = os.path.join(result_path, 'flat_sampler.csv')
     sampler_df = pd.read_csv(flat_sampler_path,
                                         names=params,
                                         skiprows=(burn_in - 1) * (n_walkers))
-    args = [SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumTthreshold, add_martinez]
+    args = [SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax, normalization, LumThreshold, add_martinez]
     return args
 
 

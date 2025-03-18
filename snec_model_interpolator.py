@@ -53,7 +53,8 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, fil
                             else:
                                 if filter: # if it's mag
                                     snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir]['snec'] = \
-                                        np.interp(data_days, model_days, snec_model[filter])
+                                        np.interp(data_days, model_days, 10**(-0.4 * snec_model[filter]))               #******#
+                                        #np.interp(data_days, model_days, snec_model[filter]) # 10**(-0.4*snec_model[filter])
                                 else:
                                     snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir]['snec'] = \
                                         np.interp(data_days, model_days, snec_model)
@@ -84,4 +85,7 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, fil
     M_above = snec_dict['above']['requested']['requested']['requested']['requested']['requested']['snec']
     M_requested = M_below * param_dict['Mzams']['weight_below'] + M_above * param_dict['Mzams']['weight_above']
     snec_dict['requested']['requested']['requested']['requested']['requested']['requested']['snec'] = M_requested
-    return snec_dict['requested']['requested']['requested']['requested']['requested']['requested']['snec']
+    if filter:                                                                                                                    #******#
+        return -2.5*np.log10(snec_dict['requested']['requested']['requested']['requested']['requested']['requested']['snec'])     #******#
+    else:                                                                                                                         #******#
+        return snec_dict['requested']['requested']['requested']['requested']['requested']['requested']['snec']

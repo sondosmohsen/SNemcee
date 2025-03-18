@@ -32,6 +32,7 @@ def get_surrouding_values(requested, ranges_dict):
     return surrouding_values
 
 
+
 def load_model(Mzams, Ni, E, R, K, Mix, data_type):
     if R == 0 or K == 0:
         R = 0
@@ -49,7 +50,7 @@ def load_model(Mzams, Ni, E, R, K, Mix, data_type):
         else:
             snec_model = pd.read_csv(modelpath)
             time_col = snec_model['t_from_discovery'] / 86400  # sec to days
-            interp_days = np.linspace(0, 200, 2001)
+            interp_days = np.linspace(0, 200, 2001)   #here(0, 250, 2001)
             snec_model = np.interp(interp_days, time_col, snec_model['Lum'])
             return snec_model
     elif data_type == 'veloc':
@@ -89,7 +90,7 @@ def load_model(Mzams, Ni, E, R, K, Mix, data_type):
             return snec_model
 
 
-def load_surrounding_models_local(models, requested, ranges_dict, fitting_type, LumTthreshold=False):
+def load_surrounding_models_local(models, requested, ranges_dict, fitting_type, LumThreshold=False):
     surrouding_values = get_surrouding_values(requested, ranges_dict)
     for Mzams in surrouding_values['Mzams']:
         for Ni in surrouding_values['Ni']:
@@ -106,7 +107,7 @@ def load_surrounding_models_local(models, requested, ranges_dict, fitting_type, 
                             if 'mag' in fitting_type:
                                 if models['mag'][Mzams][Ni][E][R][K][Mix] is None:
                                     models['mag'][Mzams][Ni][E][R][K][Mix] = load_model(Mzams, Ni, E, R, K, Mix, 'mag')
-                            if 'temp' in fitting_type or LumTthreshold:
+                            if 'temp' in fitting_type or LumThreshold:
                                 if models['temp'][Mzams][Ni][E][R][K][Mix] is None:
                                     models['temp'][Mzams][Ni][E][R][K][Mix] = load_model(Mzams, Ni, E, R, K, Mix, 'temp')
     return models
