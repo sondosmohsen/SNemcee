@@ -42,7 +42,10 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
                         snec_dict[Mdir][Nidir][Edir][Rdir][Kdir] = {'below': {}, 'above': {}, 'requested': {}}
                         for Mixdir in ['below', 'above', 'requested']:
                             snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir] = {}
-    plt.figure(figsize=(20,17))
+    # Initialize the set to track used labels
+    used_labels = set()
+    #plt.figure(figsize=(20,17))
+    plt.figure(figsize=(8,9))
     label_flag=True
     for Mdir in ['below', 'above']:
         for Nidir in ['below', 'above']:
@@ -62,16 +65,19 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
                             else:
                                 snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir]['snec'] = \
                                     np.interp(data_days, model_days, snec_model)
-                                name = 'M:' + get_edges(param_dict, 'Mzams', 1)+ \
-                                       'Ni=' + get_edges(param_dict, 'Mzams', 2)+ \
-                                       'E=' + get_edges(param_dict, 'Mzams', 1)+ \
-                                       'R=' + get_edges(param_dict, 'Mzams', 1)+ \
-                                       'K=' + get_edges(param_dict, 'Mzams', 1)+ \
-                                       'Mix=' + get_edges(param_dict, 'Mzams', 1)
-                                if label_flag:
-                                    plt.plot(data_days,  np.log10(snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir]['snec']),
+                                name = 'M=' + get_edges(param_dict, 'Mzams', 1) + \
+                                       'Ni=' + get_edges(param_dict, 'Ni', 2) + \
+                                       'E=' + get_edges(param_dict, 'E', 1) + \
+                                       'R=' + get_edges(param_dict, 'R', 1) + \
+                                       'K=' + get_edges(param_dict, 'K', 1) + \
+                                       'Mix=' + get_edges(param_dict, 'Mix', 1)
+
+                                # Add label only if not already used
+                                if name not in used_labels:
+                                    plt.plot(data_days,
+                                             np.log10(snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir]['snec']),
                                              label=name, color='tab:purple', alpha=0.2)
-                                    label_flag = False
+                                    used_labels.add(name)  # Mark the label as used
                                 else:
                                     plt.plot(data_days,
                                              np.log10(snec_dict[Mdir][Nidir][Edir][Rdir][Kdir][Mixdir]['snec']),
@@ -83,15 +89,16 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
                             'weight_above']
                         snec_dict[Mdir][Nidir][Edir][Rdir][Kdir]['requested']['snec'] = Mix_requested
 
-                        name = 'M:' + get_edges(param_dict, 'Mzams', 1) + \
-                               'Ni=' + get_edges(param_dict, 'Mzams', 2) + \
-                               'E=' + get_edges(param_dict, 'Mzams', 1) + \
-                               'R=' + get_edges(param_dict, 'Mzams', 1) + \
-                               'K=' + get_edges(param_dict, 'Mzams', 1) + \
+                        name = 'M=' + get_edges(param_dict, 'Mzams', 1) + \
+                               'Ni=' + get_edges(param_dict, 'Ni', 2) + \
+                               'E=' + get_edges(param_dict, 'E', 1) + \
+                               'R=' + get_edges(param_dict, 'R', 1) + \
+                               'K=' + get_edges(param_dict, 'K', 1) + \
                                'Mix=' + str(round(param_dict['Mix']['requested'],1))
-                        if label_flag:
+                        if label_flag and name not in used_labels:
                             plt.plot(data_days, np.log10(Mix_requested), label=name, color='tab:blue', alpha=0.3)
                             label_flag=False
+                            used_labels.add(name)
                         else:
                             plt.plot(data_days, np.log10(Mix_requested), color='tab:blue', alpha=0.3)
                     label_flag = True
@@ -100,16 +107,17 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
                     K_requested = K_below * param_dict['K']['weight_below'] + K_above * param_dict['K'][
                         'weight_above']
                     snec_dict[Mdir][Nidir][Edir][Rdir]['requested']['requested']['snec'] = K_requested
-                    name = 'M:' + get_edges(param_dict, 'Mzams', 1) + \
-                           'Ni=' + get_edges(param_dict, 'Mzams', 2) + \
-                           'E=' + get_edges(param_dict, 'Mzams', 1) + \
-                           'R=' + get_edges(param_dict, 'Mzams', 1) + \
+                    name = 'M=' + get_edges(param_dict, 'Mzams', 1) + \
+                           'Ni=' + get_edges(param_dict, 'Ni', 2) + \
+                           'E=' + get_edges(param_dict, 'E', 1) + \
+                           'R=' + get_edges(param_dict, 'R', 1) + \
                            'K=' + str(round(param_dict['K']['requested'],1)) + ' ' + \
                            'Mix=' + str(round(param_dict['Mix']['requested'], 1))
 
-                    if label_flag:
+                    if label_flag and name not in used_labels:
                         plt.plot(data_days,  np.log10(K_requested), label=name, color='tab:green', alpha=0.5)
                         label_flag=False
+                        used_labels.add(name)
                     else:
                         plt.plot(data_days, np.log10(K_requested), color='tab:green', alpha=0.5)
                 label_flag = True
@@ -118,15 +126,16 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
                 R_requested = R_below * param_dict['R']['weight_below'] + R_above * param_dict['R'][
                     'weight_above']
                 snec_dict[Mdir][Nidir][Edir]['requested']['requested']['requested']['snec'] = R_requested
-                name = 'M:' + get_edges(param_dict, 'Mzams', 1) + \
-                       'Ni=' + get_edges(param_dict, 'Mzams', 2) + \
-                       'E=' + get_edges(param_dict, 'Mzams', 1) + \
+                name = 'M=' + get_edges(param_dict, 'Mzams', 1) + \
+                       'Ni=' + get_edges(param_dict, 'Ni', 2) + \
+                       'E=' + get_edges(param_dict, 'E', 1) + \
                        'R=' + str(round(param_dict['R']['requested'],1)) + ' ' + \
                        'K=' + str(round(param_dict['K']['requested'], 1)) + ' ' + \
                        'Mix=' + str(round(param_dict['Mix']['requested'], 1))
-                if label_flag:
+                if label_flag and name not in used_labels:
                     plt.plot(data_days,  np.log10(R_requested), label=name, color='tab:olive', alpha=0.7)
                     label_flag=False
+                    used_labels.add(name)
                 else:
                     plt.plot(data_days, np.log10(R_requested), color='tab:olive', alpha=0.7)
             label_flag = True
@@ -135,16 +144,17 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
             E_requested = E_below * param_dict['E']['weight_below'] + E_above * param_dict['E']['weight_above']
             snec_dict[Mdir][Nidir]['requested']['requested']['requested']['requested']['snec'] = E_requested
 
-            name = 'M:' + get_edges(param_dict, 'Mzams', 1) + \
-                   'Ni=' + get_edges(param_dict, 'Mzams', 2) + \
+            name = 'M=' + get_edges(param_dict, 'Mzams', 1) + \
+                   'Ni=' + get_edges(param_dict, 'Ni', 2) + \
                    'E=' + str(round(param_dict['E']['requested'],1)) + ' ' + \
                    'R=' + str(round(param_dict['R']['requested'], 1)) + ' ' + \
                    'K=' + str(round(param_dict['K']['requested'], 1)) + ' ' + \
                    'Mix=' + str(round(param_dict['Mix']['requested'], 1))
 
-            if label_flag:
+            if label_flag and name not in used_labels:
                 plt.plot(data_days,  np.log10(E_requested), label=name, color='tab:orange', alpha=0.7)
                 label_flag=False
+                used_labels.add(name)
             else:
                 plt.plot(data_days, np.log10(E_requested), color='tab:orange', alpha=0.7)
         label_flag = True
@@ -169,23 +179,23 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
         #        'Mix=' + str(round(param_dict['Mix']['requested'], 1))
         # plt.plot(data_days, np.log10(Ni_above), label=name)
 
-        name = 'M:' + get_edges(param_dict, 'Mzams', 1) + \
+        name = 'M=' + get_edges(param_dict, 'Mzams', 1) + \
                'Ni=' + str(round(param_dict['Ni']['requested'],2)) + ' ' + \
                'E=' + str(round(param_dict['E']['requested'], 1)) + ' ' + \
                'R=' + str(round(param_dict['R']['requested'], 1)) + ' ' + \
                'K=' + str(round(param_dict['K']['requested'], 1)) + ' ' + \
                'Mix=' + str(round(param_dict['Mix']['requested'], 1))
 
-        if label_flag:
+        if label_flag and name not in used_labels:
             plt.plot(data_days,  np.log10(Ni_requested), label=name, color='tab:red', alpha=0.7)
             label_flag=False
+            used_labels.add(name)
         else:
             plt.plot(data_days, np.log10(Ni_requested), color='tab:red', alpha=0.7)
     M_below = snec_dict['below']['requested']['requested']['requested']['requested']['requested']['snec']
     M_above = snec_dict['above']['requested']['requested']['requested']['requested']['requested']['snec']
     M_requested = M_below * param_dict['Mzams']['weight_below'] + M_above * param_dict['Mzams']['weight_above']
     snec_dict['requested']['requested']['requested']['requested']['requested']['requested']['snec'] = M_requested
-
 
     # name = 'M=' + str(round(param_dict['Mzams']['below'], 1)) + ' ' + \
     #        'Ni=' + str(round(param_dict['Ni']['requested'], 1)) + ' ' + \
@@ -203,15 +213,14 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
     #        'Mix=' + str(round(param_dict['Mix']['requested'], 1))
     # plt.plot(data_days, np.log10(M_above), label=name)
 
-    name = 'M=' + str(round(param_dict['Mzams']['requested'],1)) + '_' + \
+    name = 'M=' + str(round(param_dict['Mzams']['requested'],1)) + ' ' + \
            'Ni=' + str(round(param_dict['Ni']['requested'], 2)) + ' ' + \
            'E=' + str(round(param_dict['E']['requested'], 1)) + ' ' + \
            'R=' + str(round(param_dict['R']['requested'], 1)) + ' ' + \
            'K=' + str(round(param_dict['K']['requested'], 1)) + ' ' + \
            'Mix=' + str(round(param_dict['Mix']['requested'], 1))
 
-    plt.plot(data_days, np.log10(M_requested), label='final interpolated model:\n'+ name, linewidth=4, color='k')
-
+    plt.plot(data_days, np.log10(M_requested), label=f"Final Interpolated Model:\n"+ name, linewidth=4, color='k')
 
     # modelpath = os.path.join('..', 'all_lum_data', name, 'lum_observed.dat')
     # snec_model = pd.read_csv(modelpath,
@@ -221,13 +230,24 @@ def snec_interpolator(requested, surrounding_values, models_dict, data_days, ext
     # snec_model = np.interp(interp_days, time_col, snec_model['Lum'])
     # plt.plot(data_days, np.log10(M_requested), label=name, linewidth=4, color='k')
 
-    plt.title(name)
-    plt.legend(fontsize=10)
-    plt.ylim(41, 42.8)
-    plt.xlim(20, 250)
+
+    #plt.title(name,  fontsize=16)
+    plt.ylim(41, 43.2)
+    plt.xlim(40, 160)  #plt.xlim(0, 250)
+    plt.xlabel("Rest-Frame Days From Discovery", fontsize=20)
+    plt.ylabel("Log Bolometric Luminosity (erg/s)", fontsize=20)
     plt.tight_layout()
-    plt.savefig('example_interpolator_plotting_'+name+'.png')
-    plt.savefig('example_interpolator_plotting_' + name + '.svg')
+    print('savefig')
+    plt.xticks(fontsize=14)  # Adjust font size for x-axis ticks
+    plt.yticks(fontsize=14)  # Adjust font size for y-axis ticks
+    plt.legend(loc='upper right',fontsize=11)
+    plt.savefig('example_interpolator_plotting_'+name+'.pdf')
     return snec_dict['requested']['requested']['requested']['requested']['requested']['requested']['snec']
+
+
+
+
+
+
 
 

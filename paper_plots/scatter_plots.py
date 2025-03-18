@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 import os
 import matplotlib.cm as cm
 
-
 resdf_CSMwith = pd.DataFrame({'name':[],
                       'Mzams':[],'Mzams_lower':[],'Mzams_upper':[],
                       'Ni':[],'Ni_lower':[],'Ni_upper':[],
@@ -26,18 +25,17 @@ SN_names = ['SN2004a', 'SN2005cs', 'SN2008bk', 'SN2012aw', 'SN2012ec', 'SN2017ea
 
 for SN_name in SN_names:
     print(SN_name + '_lum_csm-with_normalizedFalse_TreshLumFalse')
-#TODO needs to be a lum-veoc normTrue fit
-    resfile_CSMwith = pd.read_csv(os.path.join('..', 'mcmc_results', '22_9_5', '1000step',
+    resfile_CSMwith = pd.read_csv(os.path.join('..', 'mcmc_results', 'Figure20withcsm', '1000step',           #default 1000step
                                                   SN_name + '_lum_csm-with_normalizedFalse_TreshLumFalse',
                                                   'final_results.csv'))
     resfile_CSMwith['name'] = SN_name
     resdf_CSMwith = resdf_CSMwith.append(resfile_CSMwith)
-    resfile_CSMwithout = pd.read_csv(os.path.join('..', 'mcmc_results', '22_8_24', '700step',
+    resfile_CSMwithout = pd.read_csv(os.path.join('..', 'mcmc_results', 'Figure20withoutcsm', '1000step',       #default 700step
                                                   SN_name + '_lum_csm-without_normalizedFalse_TreshLumFalse',
                                                   'final_results.csv'))
     resfile_CSMwithout['name'] = SN_name
     resdf_CSMwithout = resdf_CSMwithout.append(resfile_CSMwithout)
-    paramfile = pd.read_csv(os.path.join('..', 'mcmc_results', '22_8_24', '700step', SN_name+'_lum_csm-with_normalizedFalse_TreshLumFalse', 'run_parameters.csv'), index_col=0).T
+    paramfile = pd.read_csv(os.path.join('..', 'mcmc_results', 'Figure20withoutcsm', '1000step', SN_name+'_lum_csm-with_normalizedFalse_TreshLumFalse', 'run_parameters.csv'), index_col=0).T
 
 
 # resdf = resdf.sort_values(by='name')
@@ -76,15 +74,18 @@ def plot_csm_scatter(param, param_range, ax):
                      markersize=(R[i]+50)/R_marker_norm, color=cm.viridis((70-K[i])/K_color_norm),linestyle = 'None')
         ax.annotate(txt, (x_list[i]+xspacing, y_list[i]+xspacing))
         axes.append(l)
-    ax.set_ylabel(param+' without CSM')
-    ax.set_xlabel(param+' with CSM')
+    ax.set_ylabel(param+' without CSM', fontsize=16)
+    ax.set_xlabel(param+' with CSM', fontsize=16)
+    ax.tick_params(axis='x', labelsize=12)
+    ax.tick_params(axis='y', labelsize=12)
     ax.legend()
     gll, = ax.plot([],[], markersize=(R_examples[0]+50)/R_marker_norm, marker='o', color=cm.viridis((70-K_examples[0])/K_color_norm),linestyle = 'None')
     gl, = ax.plot([],[], markersize=(R_examples[1]+50)/R_marker_norm, marker='o', color=cm.viridis((70-K_examples[1])/K_color_norm),linestyle = 'None')
-    ga, = ax.plot([],[], markersize=(R_examples[2]+50)/R_marker_norm, marker='o', color=cm.viridis((70-K_examples[2])/K_color_norm),linestyle = 'None')
+    #ga, = ax.plot([],[], markersize=(R_examples[2]+50)/R_marker_norm, marker='o', color=cm.viridis((70-K_examples[2])/K_color_norm),linestyle = 'None')
     # legend1 = ax.legend(axes, names, loc='upper left', fontsize=12)
     # ax.add_artist(legend1)
-    ax.legend((gll,gl,ga),
+    #ax.legend((gll,gl, ga),
+    ax.legend((gll, gl),
            ('K='+str(K_examples[0])+' R='+str(R_examples[0]),
             'K='+str(K_examples[1])+' R='+str(R_examples[1]),
             'K='+str(K_examples[2])+' R='+str(R_examples[2])),
@@ -109,9 +110,10 @@ param_ranges = {'Mzams': Mzams_range, 'Ni': Ni_range, 'E': E_final_range,
                     'R': R_range, 'K': K_range, 'Mix': Mix_range, 'S': [], 'T': T_range}
 
 
-fig, axs = plt.subplots(3, 2, figsize=(12,18))
+fig, axs = plt.subplots(2, 3, figsize=(15,9))
 
 params = ['E', 'Mzams', 'Ni', 'Mix', 'S', 'T']
+
 
 rows = 2
 columns = 3
@@ -121,9 +123,7 @@ for r in range(rows):
         plot_csm_scatter(params[i], param_ranges[params[i]], axs[r,c])
 
 plt.tight_layout()
-plt.savefig(os.path.join('figures', 'csm_effect_scatter.png'))
-plt.savefig(os.path.join('figures', 'csm_effect_scatter.pdf'))
-
-#TODO compare one step vs two step with/wo prior carryover for a given SN, and show traces
+#plt.savefig(os.path.join('..','figures', 'csm_effect_scatter.png'))    # i added ('..',
+plt.savefig(os.path.join('..','figures', 'csm_effect_scatter.pdf'))    # i added ('..',
 
 plt.show()
