@@ -55,7 +55,7 @@ def chain_plots(SN_name, fitting_type, csm, normalization, LumThreshold, results
 
 
 def lum_wCSM_vs_woCSM(SN_name, fitting_type, normalization, LumThreshold, results_dir, output_dir):
-    fig, axs = plt.subplots(1, 2, sharey='row', figsize=(12, 6))    #default figsize=(20, 12))
+    fig, axs = plt.subplots(1, 2, sharey='row', figsize=(12, 6))    #default figsize=(20, 12))  (12, 6)) figsize=(10, 4))
 
     lum_csmTrue_name = SN_name + '_' + fitting_type + '_csm-with' + '_normalized' + str(normalization) \
                  + '_TreshLum' + str(LumThreshold)
@@ -71,18 +71,24 @@ def lum_wCSM_vs_woCSM(SN_name, fitting_type, normalization, LumThreshold, result
     pltsn.add_likelihood_to_file(lum_csmFalse_name, 'lum', likeli, output_dir)
 
     axs[0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=16)
-    axs[0].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
-    axs[1].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
+    axs[0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
+    axs[1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
     axs[0].yaxis.set_label_coords(-0.11, 0.5)
     axs[1].yaxis.set_label_coords(-0.11, 0.5)
+    # Enlarge x and y ticks for all subplots
+    for ax in axs:
+        ax.tick_params(axis='both', which='major', labelsize=13)
+        ax.tick_params(axis='both', which='minor', labelsize=13)
+
     ################################################
-    plt.ylim(41, 44)  # sondos added
+    #plt.ylim(41, 44)  # sondos added
+    plt.ylim(40, 42.5)
     ################################################
     plt.tight_layout()
     #fig.savefig(os.path.join(output_dir, SN_name+'_lum_csm_comparison.png'))
     fig.savefig(os.path.join(output_dir, SN_name + '_lum_csm_comparison.pdf'))
     pltsn.overlay_corner_plot([lum_csmFalse_path, lum_csmTrue_path], output_dir,
-                                       ['without CSM', 'with CSM'], SN_name + '_lum_csm_comparison')
+                                       ['SNEmcee without CSM', 'SNEmcee with CSM'], SN_name + '_lum_csm_comparison')
     ################################################
     #axs[0].get_legend().remove()  # sondos added, the values should be in tables not  legend
     #axs[1].get_legend().remove()  # remove the values in the legend - the values should be in tables
@@ -90,14 +96,17 @@ def lum_wCSM_vs_woCSM(SN_name, fitting_type, normalization, LumThreshold, result
     #axs[1].set_title('Without CSM', fontsize=16)  # added title
     ################################################
     #to see the values you need to delets this:
-    # Add legends
-    axs[0].scatter([], [], color='black', label="SN2017eaw")  # Add black dots to the legend
-    axs[0].plot([], [], color='purple', label="fit with CSM")  # Add purple line to the legend
-    axs[1].scatter([], [], color='black', label="SN2017eaw")  # Add black dots to the legend
-    axs[1].plot([], [], color='purple', label="fit without CSM")  # Add purple line to the legend
 
-    axs[0].legend(fontsize=18, loc='upper right')
-    axs[1].legend(fontsize=18, loc='upper right')
+    # Adding legends
+    axs[0].scatter([], [], color='black', label=SN_name)
+    axs[0].plot([], [], color='purple', label="SNEmcee with CSM")
+    axs[0].legend(fontsize=14, loc='upper right')
+    axs[1].scatter([], [], color='black', label=SN_name)
+    axs[1].plot([], [], color='purple', label="SNEmcee without CSM")
+    axs[1].legend(fontsize=14, loc='upper right')
+
+    axs[0].legend(fontsize=14, loc='upper right')
+    axs[1].legend(fontsize=14, loc='upper right')
     fig.savefig(os.path.join(output_dir, SN_name + '_lum_csm_comparison_final.pdf'))
 
     return fig
@@ -134,7 +143,7 @@ def lum_vs_lum_veloc_vs_lum_veloc_normalized(SN_name, csm, LumThreshold, results
     axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)
     axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)
 
-    axs[1, 0].set_ylim(3000, 11500), axs[1, 1].set_ylim(3000, 11500), axs[1, 2].set_ylim(3000, 11500)
+    axs[1, 0].set_ylim(3000, 11000), axs[1, 1].set_ylim(3000, 11000), axs[1, 2].set_ylim(3000, 11000)
 
     # Enlarge x and y ticks
     for ax_row in axs:
@@ -167,7 +176,9 @@ def lum_vs_lum_veloc_vs_lum_veloc_normalized(SN_name, csm, LumThreshold, results
 
 
 def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_dir, output_dir):
-    fig, axs = plt.subplots(3, 2, figsize=(14, 14), gridspec_kw={'height_ratios': [2,2,1.3]})
+    #fig, axs = plt.subplots(3, 2, figsize=(14, 14), gridspec_kw={'height_ratios': [2,2,1.3]})
+    fig, axs = plt.subplots(3, 2, figsize=(12, 10), gridspec_kw={'height_ratios': [1.2,1.2,1]})
+
 
     lum_veloc_name = SN_name + '_lum-veloc_csm-' + csm + '_normalized' + str(normalization) \
                      + '_TreshLum' + str(LumThreshold)
@@ -189,17 +200,20 @@ def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_di
     axs[2, 1], likeli = pltsn.plot_result_fit(mag_veloc_path, 'veloc', axs[2, 1])
     pltsn.add_likelihood_to_file(mag_veloc_name, 'veloc', likeli, output_dir)
 
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=18)
-    axs[1, 0].set_ylabel('Absolute Magnitude', fontsize=18)
-    axs[2, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=18)
-    axs[2, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=18)
-    axs[2, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=18)
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=15) #fontsize=18)
+    axs[1, 0].set_ylabel('Absolute Magnitude', fontsize=15) #fontsize=18)
+    axs[2, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=15) #fontsize=18)
+    axs[2, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=15) #fontsize=18)
+    axs[2, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=15) #fontsize=18)
+    axs[0,0].yaxis.set_label_coords(-0.11, 0.5)
+    axs[1,0].yaxis.set_label_coords(-0.11, 0.5)
+    axs[2,0].yaxis.set_label_coords(-0.11, 0.5)
 
     # Enlarge x and y ticks
     for ax_row in axs:
         for ax in ax_row:
-            ax.tick_params(axis='both', which='major', labelsize=16)  # Enlarge tick labels for both axes
-            ax.tick_params(axis='both', which='minor', labelsize=14)  # Optional for minor ticks
+            ax.tick_params(axis='both', which='major', labelsize=14) #labelsize=16)  # Enlarge tick labels for both axes
+            ax.tick_params(axis='both', which='minor', labelsize=14)  #labelsize=14) # Optional for minor ticks
 
     plt.tight_layout()
     #fig.savefig(os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLum' + str(LumThreshold) + '.png'))
@@ -215,8 +229,10 @@ def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_di
     axs[0, 1].scatter([], [], color='black', label="SN2017eaw")
     axs[0, 1].plot([], [], color='purple', label="mag+veloc")
 
-    axs[0, 0].legend(fontsize=18, loc='upper right')
-    axs[0, 1].legend(fontsize=18, loc='upper right')
+    axs[0, 0].legend(fontsize=16, loc='upper right')  #fontsize=18
+    axs[0, 1].legend(fontsize=16, loc='upper right')  #fontsize=18
+    axs[1, 0].legend(fontsize=12, loc='upper right')
+    axs[1, 1].legend(fontsize=12, loc='upper right')
     fig.savefig(os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLum' + str(LumThreshold) + 'final.pdf'))
     return fig
 
@@ -467,7 +483,7 @@ def lum_veloc_vs_martinez2(SN_name, results_dir, output_dir):
     return fig
 
 
-def lum_veloc_vs_martinez(SN_name, results_dir, output_dir):
+def lum_veloc_vs_martinez3(SN_name, results_dir, output_dir):
     import os
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -547,7 +563,53 @@ def lum_veloc_vs_martinez(SN_name, results_dir, output_dir):
 
 
 
+def lum_veloc_vs_martinez(SN_name, results_dir, output_dir):
+    fig, axs = plt.subplots(2, 2, sharey='row', figsize=(12, 8), gridspec_kw={'height_ratios': [2, 1.5]})
 
+    # File paths for with-CSM and without-CSM
+    lum_veloc_with_csm_name = SN_name + '_lum-veloc_csm-with_normalizedFalse_TreshLumFalse'
+    lum_veloc_with_csm_path = os.path.join(results_dir, lum_veloc_with_csm_name)
+
+    lum_veloc_without_csm_name = SN_name + '_lum-veloc_csm-without_normalizedFalse_TreshLumFalse'
+    lum_veloc_without_csm_path = os.path.join(results_dir, lum_veloc_without_csm_name)
+
+    # Plotting bolometric luminosity
+    pltsn.plot_result_fit(lum_veloc_with_csm_path, 'lum', axs[0, 0] )
+    pltsn.plot_result_fit(lum_veloc_without_csm_path, 'lum', axs[0, 1] )
+
+    # Plotting velocities
+    pltsn.plot_result_fit(lum_veloc_with_csm_path, 'veloc', axs[1, 0]   )
+    pltsn.plot_result_fit(lum_veloc_without_csm_path, 'veloc', axs[1, 1] )
+
+    axs[1, 0].set_ylim(5000, 12000)
+    axs[1, 1].set_ylim(5000, 12000)
+
+    # Labels for each subplot
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=16)
+    axs[1, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=16)
+    axs[1, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
+    axs[1, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
+
+    axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)  # Adjust x and y positions
+    axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)  # Same x position for consistency
+
+    # Enlarge x and y ticks for all subplots
+    for ax_row in axs:
+        for ax in ax_row:
+            ax.tick_params(axis='both', which='major', labelsize=12)
+            ax.tick_params(axis='both', which='minor', labelsize=12)
+
+    # Adding legends
+    axs[0, 0].scatter([], [], color='black', label=SN_name)
+    axs[0, 0].plot([], [], color='purple', label="SNEmcee with CSM")
+    axs[0, 0].legend(fontsize=14, loc='upper right')
+    axs[0, 1].scatter([], [], color='black', label=SN_name)
+    axs[0, 1].plot([], [], color='purple', label="SNEmcee without CSM")
+    axs[0, 1].legend(fontsize=14, loc='upper right')
+    plt.tight_layout()
+    fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison_with_bestfit.pdf'))
+
+    return fig
 
 
 

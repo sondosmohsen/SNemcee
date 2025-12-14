@@ -179,7 +179,9 @@ def plot_lum_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax
     handles.extend([SNemcee_fit_lengend])
     ax.legend(handles=handles, fontsize=10)
     ax.set_xlim(-2, 200)   #here
-    ax.set_ylim(top=43.5)
+    #ax.set_ylim(top=43.5)
+    #ax.set_ylim(41.3, 43.1)
+    #SNEC_modelsax.set_ylim(40, 42.5)
     ax.tick_params(axis='both', which='major', labelsize=10)
     return ax, log_likeli
 
@@ -236,7 +238,7 @@ def plot_mag_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax
             max_x, temp_fit = mcmc_snec.temp_thresh_cutoff(requested[0:6], ranges_dict, data_x_moved)
             data_tempthresh = data_tempthresh.loc[data_x_moved <= max_x]
             x_plotting = np.linspace(-T, max_x, int(1 + max_x * 10))
-
+            #x_plotting = np.linspace(-T, 200 - T, 2001)
             for filt in filters:
                 offset = offsets[filt]
                 data_filt = data_tempthresh.loc[data_tempthresh['filter'] == filt]
@@ -269,7 +271,8 @@ def plot_mag_with_fit(SN_name, data_dict, sampler_df, ranges_dict, n_walkers, ax
     ax.legend()
     ax.set_xlim(-2, 200)
     ax.invert_yaxis()
-    ax.set_ylim(-8, -19)
+    #ax.set_ylim(-8, -19)
+    ax.set_ylim(-8.5, -18)
     ax.tick_params(axis='both', which='major', labelsize=10)
 
     return ax, log_likeli

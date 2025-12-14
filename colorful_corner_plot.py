@@ -46,10 +46,9 @@ def overlaid_corner(samples_list, sample_labels, corner_range, param_labels, out
             mlines.Line2D([], [], color=colors[i], label=sample_labels[i])
             for i in range(n)
         ],
-        fontsize=28, frameon=False,
+        fontsize=34, frameon=False,
         bbox_to_anchor=(1, ndim), loc="upper right"
     )
-    #plt.savefig(os.path.join(output_dir, filename+'_corner.png'))
     plt.savefig(os.path.join(output_dir, filename + '_corner.pdf'))
     plt.close()
 

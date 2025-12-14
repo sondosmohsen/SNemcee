@@ -27,11 +27,11 @@ Mzams_range = [9.0, 10.0, 11.0, 13.0, 15.0, 17.0]   # Progenitor ZAMS mass (sola
 Ni_range = [0.001, 0.02, 0.07, 0.12]# Ni mass (solar mass)
 E_final_range = [0.1, 0.3, 0.5, 0.9, 1.3, 1.7]  # Explosion energy (foe=10^51 erg)
 Mix_range = [2.0, 8.0]  # Ni mixing (solar mass)
-R_range = [0, 500, 1000]
+R_range = [0, 500, 1000,2000]
 K_range = [0, 10, 30, 60]
-T_range = [-5, 2]  # time shift from assumed day of explosion (days) T_range = [-5, 2]
+T_range = [0, 2]  # time shift from assumed day of explosion (days) T_range = [-5, 2]
 parameter_ranges = {'Mzams': Mzams_range, 'Ni': Ni_range, 'E': E_final_range,
-                    'R': R_range, 'K': K_range, 'Mix': Mix_range, 'S': [], 'T': T_range}
+                    'R': R_range , 'K': K_range, 'Mix': Mix_range, 'S': [], 'T': T_range}
 '''
 The function loopy_snec_mcmc imports the SNEC_models for the SN, and then runs
 mcmc_snec.py with the user-provided arguments: SN, step number, walker number 
