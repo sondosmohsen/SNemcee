@@ -242,7 +242,7 @@ def log_likelihood(theta, data, ranges_dict, fitting_type, LumThreshold, normali
         if 'lum' in fitting_type:
             #args.append(LumThreshold)       #is this neccesarily? the code doesnt run with this line:
             #                                 TypeError:calc_veloc_likelihood() takes 4 positional arguments but 5 were given
-            log_likeli += calc_lum_likelihood(*args)
+            log_likeli += calc_lum_likelihood(*args, LumThreshold=LumThreshold)
             if_flag = 1
         if 'mag' in fitting_type:
             log_likeli += calc_mag_likelihood(*args)

@@ -744,9 +744,9 @@ def main(argv):
         elif opt in ("-c", "--csm"):
             csm = arg
         elif opt in ("-n", "--normalization"):
-            normalization = arg
+            normalization = arg.lower() == "true"
         elif opt in ("-l", "--luminosity_threshold"):
-            LumThreshold = arg
+            LumThreshold = arg.lower() == "true"
     print('SN name:', SN_name)
     print('steps:', n_steps)
     print('output directory:', output_dir)

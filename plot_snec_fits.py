@@ -382,8 +382,8 @@ def get_args_from_file(result_path, ax, data_type, add_martinez=False):
     # step = run_params.iloc[0]['n_steps']
     n_walkers = int(run_params.iloc[0]['n_walkers'])
     burn_in = int(run_params.iloc[0]['burn_in'])
-    normalization = run_params.iloc[0]['normalization']
-    LumThreshold = string_to_bool(run_params.iloc[0]['Tthreshold_lum'])
+    normalization = str(run_params.iloc[0]['normalization']).lower() == "true"
+    LumThreshold = str(run_params.iloc[0]['Tthreshold_lum']).lower() == "true"
     data_dict = mcmc_snec.load_SN_data(data_type, SN_name)
     flat_sampler_path = os.path.join(result_path, 'flat_sampler.csv')
     sampler_df = pd.read_csv(flat_sampler_path,
