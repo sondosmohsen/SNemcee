@@ -41,11 +41,10 @@ def polyfit_to_distribution(array_walker_results, res_dir):
     y = counts
     area = trapz(y, dx=bin_widths[0])
     y = y / area
-    polymod = np.poly1d(np.polyfit(x, y, deg=12))
+    polymod = np.polynomial.Polynomial.fit(x, y, deg=12)
     ax.plot(x, y, color='black')
     dense_x = np.arange(np.min(x), np.max(x), (np.max(x)-np.min(x))/50)
     ax.plot(dense_x, [polymod(i) for i in dense_x], color='orange')
-    fig.savefig(os.path.join(res_dir, str(name)+'_first_step_dist.png'))
     fig.savefig(os.path.join(res_dir, str(name) + '_first_step_dist.pdf'))
     return polymod
 
@@ -97,13 +96,17 @@ def log_prior(theta, ranges_dict, nonuniform_priors=None):
                           'K': theta[4], 'Mix': theta[5], 'S': theta[6], 't': theta[7]}
             log_prior = 0.0
             for param in list(nonuniform_priors.keys()):
-                if nonuniform_priors[param] == 'gaussian':
+                if 'gaussian' in nonuniform_priors[param]:
                     mu = nonuniform_priors[param]['gaussian']['mu']
                     sigma = nonuniform_priors[param]['gaussian']['sigma']
                     log_prior += np.log(1.0 / (np.sqrt(2 * np.pi) * sigma)) - 0.5 * (param_dict[param] - mu) ** 2 / sigma ** 2
-                    # print('logprior', log_prior)
-                if nonuniform_priors[param] == 'polynomial':
-                    log_prior += np.log(nonuniform_priors[param]['polynomial'](param_dict[param]))
+
+                if 'polynomial' in nonuniform_priors[param]:
+                    probability = nonuniform_priors[param]['polynomial'](param_dict[param])
+                    if not np.isfinite(probability) or probability <= 0:
+                        return -np.inf
+                    log_prior += np.log(probability)
+
             return log_prior
 
 

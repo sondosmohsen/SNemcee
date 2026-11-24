@@ -94,8 +94,12 @@ def loopy_snec_mcmc(SN_name, n_steps, burn_in, n_walkers, output_dir, parameter_
     s = list(sampler_chain.shape[1:])
     s[0] = np.prod(sampler_chain.shape[:2])
     sampler_chain_flat = sampler_chain.reshape(s)
+
+    # remove burn-in steps from each walker before flattening
+    flat_sampler_no_burnin = sampler_chain[:, burn_in:, :].reshape(
+        -1, sampler_chain.shape[2])
     # make flat chain without the burn-in steps
-    flat_sampler_no_burnin = sampler_chain_flat[n_walkers * burn_in:, :]
+    #flat_sampler_no_burnin = sampler_chain_flat[n_walkers * burn_in:, :]
     final_step = n_steps - 1  # Python uses zero-based indexing, so the last step is n_steps - 1 (if it 500 steps, we will have: 0,1,.....499)
 
 
@@ -105,7 +109,7 @@ def loopy_snec_mcmc(SN_name, n_steps, burn_in, n_walkers, output_dir, parameter_
         flat_sampler_no_burnin_df.columns = ['Mzams', 'Ni', 'E', 'R', 'K', 'Mix', 'S', 't']
 
         # get the positions of the walkers in the last step of the no-CSM stage
-        last_walkers_noCSM = flat_sampler_no_burnin[-n_walkers:, :]
+        last_walkers_noCSM = sampler_chain[:, -1, :].copy()
         # change the R and K of that last step to initial guesses of uniform distribution within their range
         last_walkers_noCSM[:, 3] = np.random.rand(n_walkers) * \
                                       (parameter_ranges['R'][-1] - parameter_ranges['R'][0]) + \
