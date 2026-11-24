@@ -1,6 +1,29 @@
 # SNEmcee
+![Python](https://img.shields.io/badge/Python-3.8-3776AB)
+![Method](https://img.shields.io/badge/Method-MCMC-397B57)
+![Models](https://img.shields.io/badge/Models-SNEC-3776AB)
 
-**Dependencies:** <br>
+SNEmcee is a Python tool that uses Markov Chain Monte Carlo (MCMC) to fit numerical progenitor and explosion models to Type IIP supernova light curves and velocities.
+
+## Example results
+![SNEmcee fits to SN 2020bij](images/SN2020bij_example.png)
+
+*SNEmcee fits to the bolometric light curve of SN 2020bij with (left) and without (right) CSM interaction, from Mohsen-Tanev et al. (2026).*
+
+
+## Contents
+- [Dependencies](#dependencies)
+- [Input supernova data](#input-supernova-data)
+- [SNEC model grid](#snec-model-grid)
+- [Fitting parameters](#fitting-parameters)
+- [Running SNEmcee](#running-snemcee)
+- [CSM fitting options](#csm-fitting-options)
+- [SNEmcee outputs](#snemcee-outputs)
+- [Running script for comparison plots](#running-script-for-comparison-plots)
+- [Plotting outputs](#plotting-outputs)
+- [Citation](#citation)
+
+## Dependencies
 Python libraries: <br>
 corner <br>
 emcee <br>
@@ -14,7 +37,7 @@ The required Python libraries can be installed using:
 pip install corner emcee "pandas<2" "numpy<2" scipy matplotlib
 ```
 
-**Input supernova data:** <br>
+## Input supernova data
 Supernova data files (observations) should be stored in the directory ‘SN_data’, with the following names: <br>
 - `<SN_name>_veloc` - Fe II 5169 velocity measurements (km/s).
 - `<SN_name>_mag` - Multi-band photometric measurements.
@@ -28,7 +51,7 @@ In addition, the file `distances.csv` should be stored in `SN_data` and contain 
 - `distance_err` - Distance uncertainty in Mpc.
 
 
-**SNEC model grid:** <br>
+## SNEC model grid
 SNEmcee uses a pre-computed grid of 2,469 hydrodynamical explosion models calculated with SNEC, using KEPLER red supergiant progenitors with and without circumstellar material (CSM). <br>
 The grid should be downloaded from: <br>
 https://drive.google.com/file/d/1-7ki0ADkq2_Y8ffyzWMT42_VuvXQK69p/view?usp=sharing
@@ -38,7 +61,7 @@ And then added to the main directory and extracted using
 The result should be the directory `SNEmcee/SNEC_models` which contains 2,469 sub-directories with names like 'M9.0_Ni0.001_E0.1_Mix2.0_R1000_K10' <br>
 Each model subdirectory contains the predicted bolometric light curve, multi-band magnitudes, Fe II 5169 velocities, and effective temperature evolution. <br>
 
-**Fitting parameters:** <br>
+## Fitting parameters
 SNEmcee fits eight parameters: six parameters defining the SNEC model grid and two additional fitting parameters (S and t). <br>
 
 | Parameter | Description | Grid values | Units |
@@ -57,7 +80,7 @@ The scaling factor S accounts for uncertainties in the distance estimate, and t 
 SNEmcee interpolates between the discrete grid points to continuously explore the parameter space. <br>
 For fits without CSM, R and K are fixed to zero. <br>
 
-**Running SNEmcee:** <br>
+## Running SNEmcee
 To run SNEmcee on your SN of choice, use the following command: <br>
 
 `python3 run_mcmc_snec_for_all_SNe.py -S <SN name> -t <fitting_type> -s <number of steps> -b <burn-in steps> -w <number of walkers> -o <output directory> -c <csm> -n <normalization> -l <luminosity threshold> -p <nonuniform priors>` <br>
@@ -81,7 +104,7 @@ To fit the bolometric light curve and Fe II 5169 velocities of SN2017eaw with CS
 
 `python3 run_mcmc_snec_for_all_SNe.py -S SN2017eaw -t lum-veloc -s 1000 -b 400 -w 50 -o example -c with`
 
-**CSM fitting options:** <br>
+## CSM fitting options
 SNEmcee supports four CSM fitting modes, specified using the `-c` argument: <br>
 
 - `with`: All eight parameters are fitted simultaneously, including the CSM parameters R and K.
@@ -92,7 +115,7 @@ SNEmcee supports four CSM fitting modes, specified using the `-c` argument: <br>
 For both two-stage fitting modes, the final sampler contains only the results of the second stage. <br>
 The specified number of MCMC steps is applied to each stage separately. <br>
 
-**SNEmcee outputs:** <br>
+## SNEmcee outputs
 Output files will be stored in `mcmc_results/<output directory>/<number of steps>step/<SN_name>_<fitting_type>_csm-<csm>_normalized<normalization>_TreshLum<luminosity_threshold>/`. <br>
 
 Output files will include: <br>
@@ -114,7 +137,7 @@ Log-posterior values from the MCMC sampler, including burn-in steps and excludin
 
 For `twostep-carryover` fits, figures showing the first-stage parameter distributions and their polynomial approximations are also saved. <br>
 
-**Running script for comparison plots:** <br>
+## Running script for comparison plots
 After running run_mcmc_snec_for_all_SNe.py, you can use plot_snec_fits_wrapper.py to plot paper-ready figures - for example, to compare the effect of different likelihood functions (different fitting schemes), or the inclusion of CSM, on the posterior distributions: <br>
 
 `python3 plot_snec_fits_wrapper.py -S <SN name> -s <number of steps> -f <figure_type> -o <output directory> -t <fitting type> -c <csm> -n <normalization> -l <luminosity threshold>` <br>
@@ -153,7 +176,7 @@ The `martinez_comparison` option expects MCMC results generated with normalizati
 `python3 plot_snec_fits_wrapper.py -S SN2017eaw -s 1000 -f lum-veloc -o example -t lum-veloc -c with` <br>
 
 
-**Plotting outputs:** <br>
+## Plotting outputs
 Output files will be stored in `figures/<output directory>/<number of steps>step/`. <br>
 The Martinez comparison plots are stored in `figures/<output directory>/`. <br>
 
@@ -164,7 +187,7 @@ Corner plot of posterior distributions for each parameter. <br>
 Comparison corner plot with the posterior distributions for each run type overlaid on one another. <br>
 Chain plots for each parameter, with the burn-in region indicated. <br>
 
-**Citation:** <br>
+## Citation
 If you use SNEmcee in your research, please cite our accompanying paper: <br>
 
 Mohsen-Tanev, S., Shitrit, N., Bracha, S., & Arcavi, I. <br>
