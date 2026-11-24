@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use SNEmcee in your research, please cite this software."
+title: "SNEmcee"
+type: software
+authors:
+  - family-names: "Mohsen-Tanev"
+    given-names: "Sondos"
+    orcid: "https://orcid.org/0009-0006-7842-2125"
+    affiliation: "Tel Aviv University"
+  - family-names: "Shitrit"
+    given-names: "Noi"
+    orcid: "https://orcid.org/0000-0001-9511-6054"
+    affiliation: "Tel Aviv University"
+  - family-names: "Bracha"
+    given-names: "Shahar"
+    orcid: "https://orcid.org/0000-0001-5320-3352"
+    affiliation: "Massachusetts Institute of Technology"
+  - family-names: "Arcavi"
+    given-names: "Iair"
+    orcid: "https://orcid.org/0000-0001-7090-4898"
+    affiliation: "Tel Aviv University"
+repository-code: "https://github.com/sondosmohsen/SNemcee"
+license: MIT
