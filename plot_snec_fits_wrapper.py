@@ -758,10 +758,7 @@ def main(argv):
 
     res_dir = os.path.join('mcmc_results', output_dir, str(n_steps) + 'step')
     step_dir = os.path.join('figures', output_dir, str(n_steps) + 'step')
-    if not os.path.exists(step_dir):
-        if not os.path.exists(os.path.join('figures', output_dir)):
-            os.mkdir(os.path.join('figures', output_dir))
-        os.mkdir(step_dir)
+    os.makedirs(step_dir, exist_ok=True)
 
     if 'comparison' not in type_fig:
         if type_fig == 'corner':

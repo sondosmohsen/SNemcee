@@ -61,12 +61,7 @@ def make_res_dir(SN_name, run_type, csm, normalization, LumThreshold, output_dir
     filename = SN_name + '_' + run_type + '_csm-' + str(csm) \
                + '_normalized' + str(normalization) + '_TreshLum' + str(LumThreshold)
     res_dir = os.path.join('mcmc_results', output_dir, str(n_steps) + 'step', filename)
-    if not os.path.exists(res_dir):
-        if not os.path.exists(os.path.join('mcmc_results', output_dir, str(n_steps) + 'step')):
-            if not os.path.exists(os.path.join('mcmc_results', output_dir)):
-                os.mkdir(os.path.join('mcmc_results', output_dir))
-            os.mkdir(os.path.join('mcmc_results', output_dir, str(n_steps) + 'step'))
-        os.mkdir(res_dir)
+    os.makedirs(res_dir, exist_ok=True)
     return res_dir
 
 
