@@ -12,8 +12,6 @@ import models as mod
 import datetime
 matplotlib.use('Agg')
 
-
-
 plt.rc('font', size=20)          # controls default text sizes
 plt.rc('axes', titlesize=20)     # fontsize of the axes title
 plt.rc('axes', labelsize=20)    # fontsize of the x and y labels
@@ -25,9 +23,6 @@ plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['xtick.major.pad']='0.2' #sondos added this to make spacing between the ticklables and axes in the corner plots
 plt.rcParams['ytick.major.pad']='0.2' #sondos added this to make spacing between the ticklables and axes in the corner plots
 
-
-
-
 colors = {'u': 'purple', 'g': 'teal', 'r': 'red', 'i': 'maroon', 'z': 'black', 'U': 'purple',
           'B': 'blue', 'V': 'green', 'R': 'red', 'I': 'maroon'}
 
@@ -35,7 +30,6 @@ colors = {'u': 'purple', 'g': 'teal', 'r': 'red', 'i': 'maroon', 'z': 'black', '
 # found to be equal about 1.4, by fitting to all the SNe in our sample
 T_thresh = 10 ** 3.5
 models = {}
-
 
 def polyfit_to_distribution(array_walker_results, res_dir):
     name = array_walker_results.name
@@ -73,12 +67,14 @@ def theta_in_range(theta, ranges_dict):
                           (ranges_list[i][0] <= theta[i] <= ranges_list[i][-1])
         return truth_value
 
-
 def log_prior(theta, ranges_dict, nonuniform_priors=None):
     """
     Parameters
     ----------
-    theta: vector containing a specific set of parameters theta = [Mzams, Ni, E, R, K, Mix, S, T].
+    theta: vector containing a specific set of parameters theta = [Mzams, Ni, E, R, K, Mix, S, t].
+    where:
+    R = ΔR_CSM = R_ext - R_star
+    (CSM thickness in solar radii)
 
     ranges_dict : as provided by the user, in the form of (example):
     ranges_dict =  {Mzams : [13.0, 14.0, 15.0, 16.0],
@@ -88,7 +84,7 @@ def log_prior(theta, ranges_dict, nonuniform_priors=None):
                     R : [0.1, 0.1],
                     K : [0.1, 0.1],
                     S : [0.8, 1.2],
-                    T : no days to model[-15, +15]}
+                    t : no days to model[-15, +15]}
     """
     if not theta_in_range(theta, ranges_dict):
         return -np.inf
@@ -98,7 +94,7 @@ def log_prior(theta, ranges_dict, nonuniform_priors=None):
             return 0.0
         else:
             param_dict = {'Mzams': theta[0], 'Ni': theta[1], 'E': theta[2], 'R': theta[3],
-                          'K': theta[4], 'Mix': theta[5], 'S': theta[6], 'T': theta[7]}
+                          'K': theta[4], 'Mix': theta[5], 'S': theta[6], 't': theta[7]}
             log_prior = 0.0
             for param in list(nonuniform_priors.keys()):
                 if nonuniform_priors[param] == 'gaussian':
@@ -228,7 +224,7 @@ def log_likelihood(theta, data, ranges_dict, fitting_type, LumThreshold, normali
     """
     Parameters
     ----------
-    theta: vector containing a specific set of parameters theta = [Mzams, Ni, E, R, K, Mix, S, T].
+    theta: vector containing a specific set of parameters theta = [Mzams, Ni, E, R, K, Mix, S, t].
 
     ranges_dict : as provided by the user, in the form described above
 
@@ -352,7 +348,7 @@ def write_params_file(parameter_ranges, SN_name, n_walkers, n_steps, csm, LumThr
                                            'K_range': str(parameter_ranges['K']),
                                            'Mix_range': str(parameter_ranges['Mix']),
                                            'Scaling_range': str(parameter_ranges['S']),
-                                           'T_range': str(parameter_ranges['T']),
+                                           't_range': str(parameter_ranges['t']),
                                            'n_walkers': n_walkers, 'n_steps': n_steps,
                                            'burn_in': burn_in,
                                            'csm': csm,

@@ -23,15 +23,15 @@ Lists specifying the range of parameters to allow the mcmc to explore,
 based on the extent of the SNEC grid available
 '''
 
-Mzams_range = [9.0, 10.0, 11.0, 13.0, 15.0, 17.0]   # Progenitor ZAMS mass (solar mass)
-Ni_range = [0.001, 0.02, 0.07, 0.12]# Ni mass (solar mass)
+Mzams_range = [ 9.0, 10.0, 11.0, 13.0, 15.0, 17.0]   # Progenitor ZAMS mass (solar mass)
+Ni_range = [0.001, 0.02, 0.07, 0.12]  # Ni mass (solar mass)
 E_final_range = [0.1, 0.3, 0.5, 0.9, 1.3, 1.7]  # Explosion energy (foe=10^51 erg)
 Mix_range = [2.0, 8.0]  # Ni mixing (solar mass)
-R_range = [0, 500, 1000,2000]
-K_range = [0, 10, 30, 60]
-T_range = [0, 2]  # time shift from assumed day of explosion (days) T_range = [-5, 2]
+R_range = [0, 500, 1000, 2000]  # CSM thickness ΔR_CSM = R_ext - R_star (solar radii)
+K_range = [0, 10, 30, 60]  # CSM density
+t_range = [-5, 2]  # time shift from assumed day of explosion (days) t_range = [-5, 2]
 parameter_ranges = {'Mzams': Mzams_range, 'Ni': Ni_range, 'E': E_final_range,
-                    'R': R_range , 'K': K_range, 'Mix': Mix_range, 'S': [], 'T': T_range}
+                    'R': R_range , 'K': K_range, 'Mix': Mix_range, 'S': [], 't': t_range}
 '''
 The function loopy_snec_mcmc imports the SNEC_models for the SN, and then runs
 mcmc_snec.py with the user-provided arguments: SN, step number, walker number 
@@ -53,7 +53,7 @@ the output directory. Output 3.5es include:
 2) Fits of final models to the input observation SNEC_models for that SN (all walkers, and steps after burn-in)        # TODO add this to the code
 3) Chain plots for each parameter        # TODO add this to the code
 4) Flat_sampler.csv: MCMC sampler output table - a 2D table, where columns are the parameters, and rows are walkers and steps (by the hierarchy of: steps, and within them walkers)
-5) final_results.csv: Summary statistics for the final posterior distributions for each parameter: mean, 16% percentile and 85% percentile.
+5) final_results.csv: Summary statistics for the final posterior distributions for each parameter: mean, 16% percentile and 84% percentile.
 6) run_parameters.csv: Record of the input arguments used in that run
 '''
 
@@ -102,7 +102,7 @@ def loopy_snec_mcmc(SN_name, n_steps, burn_in, n_walkers, output_dir, parameter_
     if csm == 'twostep' or csm == 'twostep-carryover':
         # make a flat chain matrix as dataframe with column headers
         flat_sampler_no_burnin_df = pd.DataFrame(flat_sampler_no_burnin)
-        flat_sampler_no_burnin_df.columns = ['Mzams', 'Ni', 'E', 'R', 'K', 'Mix', 'S', 'T']
+        flat_sampler_no_burnin_df.columns = ['Mzams', 'Ni', 'E', 'R', 'K', 'Mix', 'S', 't']
 
         # get the positions of the walkers in the last step of the no-CSM stage
         last_walkers_noCSM = flat_sampler_no_burnin[-n_walkers:, :]
@@ -119,7 +119,7 @@ def loopy_snec_mcmc(SN_name, n_steps, burn_in, n_walkers, output_dir, parameter_
             nonuniform_priors = None
         elif csm == 'twostep-carryover':
             nonuniform_priors = {}
-            for param in ['Mzams', 'Ni', 'E', 'Mix', 'S', 'T']:
+            for param in ['Mzams', 'Ni', 'E', 'Mix', 'S', 't']:
                 nonuniform_priors[param] = {
                     'polynomial': mcmc_snec.polyfit_to_distribution(flat_sampler_no_burnin_df[param], res_dir)}
 

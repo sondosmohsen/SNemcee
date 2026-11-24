@@ -5,17 +5,18 @@ import sys, getopt
 import datetime
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 
 time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 def plot_single(fig_type, model_path, ax):
     ax, likeli = pltsn.plot_result_fit(model_path, fig_type, ax)
-    ax.set_xlabel('Rest-Frame Days From Discovery', fontsize=14)
+    ax.set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=14)
     if fig_type == 'lum':
-        ax.set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=14)
+        ax.set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=14)
     if fig_type == 'veloc':
-        ax.set_ylabel('Expansion Velocity (km/s)', fontsize=14)
+        ax.set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=14)
     if fig_type == 'mag':
         ax.set_ylabel('Absolute Magnitude', fontsize=14)
     plt.tight_layout()
@@ -31,12 +32,11 @@ def composite_plot(SN_name, fig_type, fitting_type, csm, normalization, LumThres
     fig, axs = plt.subplots(num_subplots, figsize=(10, num_subplots*7))
     if num_subplots > 1:
         for i, f in enumerate(fig_types):
-            axs[0], likeli = plot_single(f, model_path, axs[i])
+            axs[0], likeli = plot_single(f, model_path, axs[i])       #chatgpt: בתוך הלולאה כתוב axs[0] במקום axs[i]
             pltsn.add_likelihood_to_file(model_name, fig_type, likeli, output_dir)
     else:
         axs, likeli = plot_single(fig_type, model_path, axs)
         pltsn.add_likelihood_to_file(model_name, fig_type, likeli, output_dir)
-    fig.savefig(os.path.join(output_dir, model_name + '_'+str(fig_type)+'_plot.png'))
     fig.savefig(os.path.join(output_dir, model_name + '_' + str(fig_type) + '_plot.pdf'))
 
 
@@ -55,7 +55,7 @@ def chain_plots(SN_name, fitting_type, csm, normalization, LumThreshold, results
 
 
 def lum_wCSM_vs_woCSM(SN_name, fitting_type, normalization, LumThreshold, results_dir, output_dir):
-    fig, axs = plt.subplots(1, 2, sharey='row', figsize=(12, 6))    #default figsize=(20, 12))  (12, 6)) figsize=(10, 4))
+    fig, axs = plt.subplots(1, 2, sharey='row', figsize=(12, 5))    #default figsize=(20, 12))  (12, 6)/(10, 4)) (12, 5))
 
     lum_csmTrue_name = SN_name + '_' + fitting_type + '_csm-with' + '_normalized' + str(normalization) \
                  + '_TreshLum' + str(LumThreshold)
@@ -70,22 +70,22 @@ def lum_wCSM_vs_woCSM(SN_name, fitting_type, normalization, LumThreshold, result
     axs[1], likeli = pltsn.plot_result_fit(lum_csmFalse_path, 'lum', axs[1])
     pltsn.add_likelihood_to_file(lum_csmFalse_name, 'lum', likeli, output_dir)
 
-    axs[0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=16)
-    axs[0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
-    axs[1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
+    axs[0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=14)  #fontsize=16/14
+    axs[0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=14)    #fontsize=16
+    axs[1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=14)   #fontsize=16
     axs[0].yaxis.set_label_coords(-0.11, 0.5)
     axs[1].yaxis.set_label_coords(-0.11, 0.5)
+    ##########
     # Enlarge x and y ticks for all subplots
     for ax in axs:
-        ax.tick_params(axis='both', which='major', labelsize=13)
-        ax.tick_params(axis='both', which='minor', labelsize=13)
+        ax.tick_params(axis='both', which='major', labelsize=13)    #fontsize=13
+        ax.tick_params(axis='both', which='minor', labelsize=13)    #fontsize=13
 
     ################################################
-    #plt.ylim(41, 44)  # sondos added
-    plt.ylim(40, 42.5)
+    plt.ylim(40.5, 44)  # sondos added
+    #plt.ylim(40.4, 42.4)
     ################################################
     plt.tight_layout()
-    #fig.savefig(os.path.join(output_dir, SN_name+'_lum_csm_comparison.png'))
     fig.savefig(os.path.join(output_dir, SN_name + '_lum_csm_comparison.pdf'))
     pltsn.overlay_corner_plot([lum_csmFalse_path, lum_csmTrue_path], output_dir,
                                        ['SNEmcee without CSM', 'SNEmcee with CSM'], SN_name + '_lum_csm_comparison')
@@ -98,15 +98,16 @@ def lum_wCSM_vs_woCSM(SN_name, fitting_type, normalization, LumThreshold, result
     #to see the values you need to delets this:
 
     # Adding legends
-    axs[0].scatter([], [], color='black', label=SN_name)
+    axs[0].scatter([], [], color='black', label= SN_name)  #'SN2020bij')     SN_name)
     axs[0].plot([], [], color='purple', label="SNEmcee with CSM")
-    axs[0].legend(fontsize=14, loc='upper right')
-    axs[1].scatter([], [], color='black', label=SN_name)
+    axs[0].legend(fontsize=13, loc='upper right')     #fontsize=14/12
+    axs[1].scatter([], [], color='black', label= SN_name)  #'SN2020bij')     SN_name)
     axs[1].plot([], [], color='purple', label="SNEmcee without CSM")
-    axs[1].legend(fontsize=14, loc='upper right')
+    axs[1].legend(fontsize=13, loc='upper right')     #fontsize=14/12
 
-    axs[0].legend(fontsize=14, loc='upper right')
-    axs[1].legend(fontsize=14, loc='upper right')
+    axs[0].legend(fontsize=13, loc='upper right')     #fontsize=14/12
+    axs[1].legend(fontsize=13, loc='upper right')     #fontsize=14/12
+
     fig.savefig(os.path.join(output_dir, SN_name + '_lum_csm_comparison_final.pdf'))
 
     return fig
@@ -135,15 +136,17 @@ def lum_vs_lum_veloc_vs_lum_veloc_normalized(SN_name, csm, LumThreshold, results
     axs[1, 2], likeli = pltsn.plot_result_fit(lum_veloc_normalized_path, 'veloc', axs[1, 2])
     pltsn.add_likelihood_to_file(lum_veloc_normalized_name, 'veloc', likeli, output_dir)
 
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=20)
-    axs[1, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=20)
-    axs[1, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)
-    axs[1, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)   #(lum_veloc)
-    axs[1, 2].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)    #(lum_veloc_normalized)
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=20)
+    axs[1, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=20)
+    axs[1, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+    axs[1, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)   #(lum_veloc)
+    axs[1, 2].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)    #(lum_veloc_normalized)
     axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)
     axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)
 
-    axs[1, 0].set_ylim(3000, 11000), axs[1, 1].set_ylim(3000, 11000), axs[1, 2].set_ylim(3000, 11000)
+    # Set y-axis limits
+    axs[0, 0].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 0].set_ylim(3000, 11500)  # Velocity
 
     # Enlarge x and y ticks
     for ax_row in axs:
@@ -152,17 +155,16 @@ def lum_vs_lum_veloc_vs_lum_veloc_normalized(SN_name, csm, LumThreshold, results
             ax.tick_params(axis='both', which='minor', labelsize=14)  # Optional for minor ticks
 
     plt.tight_layout()
-    #fig.savefig(os.path.join(output_dir, SN_name + '_lum_veloc_comparison.png'))
     fig.savefig(os.path.join(output_dir, SN_name + '_lum_veloc_comparison.pdf'))
 
     pltsn.overlay_corner_plot([lum_path, lum_veloc_path, lum_veloc_normalized_path], output_dir,
                                        ['lum', 'lum+veloc, not normalized', 'lum+veloc, normalized'], SN_name + '_lum_veloc_comparison')
     ################################################
-    axs[0,0].scatter([], [], color='black', label="SN2017eaw")
+    axs[0,0].scatter([], [], color='black', label="SN 2017eaw")
     axs[0,0].plot([], [], color='purple', label="lum")
-    axs[0,1].scatter([], [], color='black', label="SN2017eaw")
+    axs[0,1].scatter([], [], color='black', label="SN 2017eaw")
     axs[0,1].plot([], [], color='purple', label="lum+veloc")
-    axs[0,2].scatter([], [], color='black', label="SN2017eaw")
+    axs[0,2].scatter([], [], color='black', label="SN 2017eaw")
     axs[0,2].plot([], [], color='purple', label="lum+veloc, normalized")
 
     axs[0,0].legend(fontsize=18, loc='upper right')
@@ -176,8 +178,8 @@ def lum_vs_lum_veloc_vs_lum_veloc_normalized(SN_name, csm, LumThreshold, results
 
 
 def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_dir, output_dir):
-    #fig, axs = plt.subplots(3, 2, figsize=(14, 14), gridspec_kw={'height_ratios': [2,2,1.3]})
-    fig, axs = plt.subplots(3, 2, figsize=(12, 10), gridspec_kw={'height_ratios': [1.2,1.2,1]})
+    fig, axs = plt.subplots(3, 2, figsize=(14, 14), gridspec_kw={'height_ratios': [2,2,1.3]})
+    #fig, axs = plt.subplots(3, 2, figsize=(12, 10), gridspec_kw={'height_ratios': [1.5,1.5,1]})
 
 
     lum_veloc_name = SN_name + '_lum-veloc_csm-' + csm + '_normalized' + str(normalization) \
@@ -200,11 +202,19 @@ def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_di
     axs[2, 1], likeli = pltsn.plot_result_fit(mag_veloc_path, 'veloc', axs[2, 1])
     pltsn.add_likelihood_to_file(mag_veloc_name, 'veloc', likeli, output_dir)
 
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=15) #fontsize=18)
-    axs[1, 0].set_ylabel('Absolute Magnitude', fontsize=15) #fontsize=18)
-    axs[2, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=15) #fontsize=18)
-    axs[2, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=15) #fontsize=18)
-    axs[2, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=15) #fontsize=18)
+    # Set y-axis limits
+    axs[0, 0].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 0].set_ylim(-8, -19)  # Magnitudes
+    axs[2, 0].set_ylim(3000, 10500)  # Velocity
+    axs[0, 1].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 1].set_ylim(-8, -19)  # Magnitudes
+    axs[2, 1].set_ylim(3000, 10500)  # Velocity
+
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=20)
+    axs[1, 0].set_ylabel('Absolute Magnitude', fontsize=20)
+    axs[2, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=20)
+    axs[2, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+    axs[2, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
     axs[0,0].yaxis.set_label_coords(-0.11, 0.5)
     axs[1,0].yaxis.set_label_coords(-0.11, 0.5)
     axs[2,0].yaxis.set_label_coords(-0.11, 0.5)
@@ -212,11 +222,10 @@ def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_di
     # Enlarge x and y ticks
     for ax_row in axs:
         for ax in ax_row:
-            ax.tick_params(axis='both', which='major', labelsize=14) #labelsize=16)  # Enlarge tick labels for both axes
-            ax.tick_params(axis='both', which='minor', labelsize=14)  #labelsize=14) # Optional for minor ticks
+            ax.tick_params(axis='both', which='major', labelsize=16)
+            ax.tick_params(axis='both', which='minor', labelsize=14)
 
     plt.tight_layout()
-    #fig.savefig(os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLum' + str(LumThreshold) + '.png'))
     fig.savefig(
         os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLum' + str(LumThreshold) + '.pdf'))
 
@@ -224,13 +233,13 @@ def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_di
                                        ['lum+veloc', 'mag+veloc'],
                                        SN_name + '_lum-veloc_mag-veloc_comparison_TreshLum'+str(LumThreshold))
     ################################################
-    axs[0, 0].scatter([], [], color='black', label="SN2017eaw")
+    axs[0, 0].scatter([], [], color='black', label="SN 2017eaw")
     axs[0, 0].plot([], [], color='purple', label="lum+veloc")
-    axs[0, 1].scatter([], [], color='black', label="SN2017eaw")
+    axs[0, 1].scatter([], [], color='black', label="SN 2017eaw")
     axs[0, 1].plot([], [], color='purple', label="mag+veloc")
 
-    axs[0, 0].legend(fontsize=16, loc='upper right')  #fontsize=18
-    axs[0, 1].legend(fontsize=16, loc='upper right')  #fontsize=18
+    axs[0, 0].legend(fontsize=18, loc='upper right')
+    axs[0, 1].legend(fontsize=18, loc='upper right')
     axs[1, 0].legend(fontsize=12, loc='upper right')
     axs[1, 1].legend(fontsize=12, loc='upper right')
     fig.savefig(os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLum' + str(LumThreshold) + 'final.pdf'))
@@ -240,6 +249,7 @@ def lum_veloc_vs_mag_veloc(SN_name, csm, normalization, LumThreshold, results_di
 
 
 def lum_mag_veloc_Tthresh(SN_name, csm, normalization, results_dir, output_dir):
+    #fig, axs = plt.subplots(3, 2, figsize=(14, 14), gridspec_kw={'height_ratios': [2,2,1.3]})
     fig, axs = plt.subplots(6, 2, figsize=(15, 21))
 
     lum_veloc_threshTrue_name = SN_name + '_lum-veloc_csm-' + csm + '_normalized' + str(normalization) \
@@ -283,21 +293,28 @@ def lum_mag_veloc_Tthresh(SN_name, csm, normalization, results_dir, output_dir):
     axs[5, 1], likeli = pltsn.plot_result_fit(mag_veloc_threshFalse_path, 'veloc', axs[5, 1])
     pltsn.add_likelihood_to_file(mag_veloc_threshFalse_name, 'veloc', likeli, output_dir)
 
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=12)
-    axs[1, 0].set_ylabel('Absolute Magnitude', fontsize=12)
-    axs[2, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=12)
-    axs[2, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=12)
-    axs[2, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=12)
+    # Set y-axis limits
+    axs[0, 0].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 0].set_ylim(-8, -18)  # Magnitudes
+    axs[2, 0].set_ylim(3000, 10500)  # Velocity
+    axs[0, 1].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 1].set_ylim(-8, -18)  # Magnitudes
+    axs[2, 1].set_ylim(3000, 10500)  # Velocity
 
-    axs[3, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=12)
-    axs[4, 0].set_ylabel('Absolute Magnitude', fontsize=12)
-    axs[5, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=12)
-    axs[5, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=12)
-    axs[5, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=12)
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=20)
+    axs[1, 0].set_ylabel('Absolute Magnitude', fontsize=20)
+    axs[2, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=20)
+    axs[2, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+    axs[2, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+
+    axs[3, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=20)
+    axs[4, 0].set_ylabel('Absolute Magnitude', fontsize=20)
+    axs[5, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=20)
+    axs[5, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+    axs[5, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
 
 
     plt.tight_layout()
-    #fig.savefig(os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLumComparison.png'))
     fig.savefig(
         os.path.join(output_dir, SN_name + '_lum-veloc_mag-veloc_comparison_TreshLumComparison.pdf'))
 
@@ -330,13 +347,15 @@ def lum_veloc_onestep_vs_twostep(SN_name, normalization, LumThreshold, results_d
     axs[1, 2], likeli = pltsn.plot_result_fit(twostep_priorTrue_path, 'veloc', axs[1, 2])
     pltsn.add_likelihood_to_file(twostep_priorTrue_name, 'veloc', likeli, output_dir)
 
-    axs[1, 0].set_ylim(3000, 11500), axs[1, 1].set_ylim(3000, 11500), axs[1, 2].set_ylim(3000, 11500)
+    # Set y-axis limits
+    axs[0, 0].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 0].set_ylim(3000, 11500)  # Velocity
 
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=20)
-    axs[1, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=20)
-    axs[1, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)
-    axs[1, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)
-    axs[1, 2].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=20)
+    axs[1, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=20)
+    axs[1, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+    axs[1, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
+    axs[1, 2].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=20)
     axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)
     axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)
 
@@ -347,7 +366,6 @@ def lum_veloc_onestep_vs_twostep(SN_name, normalization, LumThreshold, results_d
             ax.tick_params(axis='both', which='minor', labelsize=14)  # Optional for minor ticks
 
     plt.tight_layout()
-    #fig.savefig(os.path.join(output_dir, SN_name + '_onestep_twostep_comparison.png'))
     fig.savefig(os.path.join(output_dir, SN_name + '_onestep_twostep_comparison.pdf'))
 
     pltsn.overlay_corner_plot([onestep_path, twostep_priorNone_path, twostep_priorTrue_path],
@@ -355,16 +373,17 @@ def lum_veloc_onestep_vs_twostep(SN_name, normalization, LumThreshold, results_d
                                        ['one step', 'two step, no priors carryover', 'two step, with priors carryover'],
                                        SN_name + '_onestep_twostep_comparison')
     ################################################
-    axs[0, 0].scatter([], [], color='black', label="SN2017eaw")
+    axs[0, 0].scatter([], [], color='black', label="SN 2017eaw")
     axs[0, 0].plot([], [], color='purple', label="One step")
-    axs[0, 1].scatter([], [], color='black', label="SN2017eaw")
+    axs[0, 1].scatter([], [], color='black', label="SN 2017eaw")
     axs[0, 1].plot([], [], color='purple', label="Two steps ")
-    axs[0, 2].scatter([], [], color='black', label="SN2017eaw")
-    axs[0, 2].plot([], [], color='purple', label="Two steps with priors carryover")
+    axs[0, 2].scatter([], [], color='black', label="SN 2017eaw")
+    axs[0, 2].plot([], [], color='purple', label="Two steps with prior carryover")
 
     axs[0, 0].legend(fontsize=18, loc='upper right')
     axs[0, 1].legend(fontsize=18, loc='upper right')
     axs[0, 2].legend(fontsize=18, loc='upper right')
+
     fig.savefig(os.path.join(output_dir, SN_name + '_onestep_twostep_comparison_final.pdf'))
     return fig
 
@@ -375,11 +394,11 @@ def lum_veloc_vs_martinez1(SN_name, results_dir, output_dir):   #(old version (j
     lum_veloc_path = os.path.join(results_dir, lum_veloc_name)
     pltsn.plot_result_fit(lum_veloc_path, 'lum', axs[0], add_martinez=True)
     pltsn.plot_result_fit(lum_veloc_path, 'veloc', axs[1], add_martinez=True)
-    axs[0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=22) #default fontsize=14
-    axs[1].set_ylabel('Expansion Velocity (km/s)', fontsize=22)
-    axs[1].set_xlabel('Rest-Frame Days From Discovery', fontsize=22)
-    axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)  # Adjust x and y positions
-    axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)  # Same x position for consistency
+    axs[0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=22) #default fontsize=14
+    axs[1].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=22)
+    axs[1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=22)
+    axs[0].yaxis.set_label_coords(-0.11, 0.5)  # Adjust x and y positions
+    axs[1].yaxis.set_label_coords(-0.11, 0.5)  # Same x position for consistency
     # Enlarge x and y ticks
     for ax in axs:
         ax.tick_params(axis='both', which='major', labelsize=16)  # Enlarge tick labels for both axes
@@ -387,9 +406,16 @@ def lum_veloc_vs_martinez1(SN_name, results_dir, output_dir):   #(old version (j
     plt.tight_layout()
     fig.savefig(os.path.join('figures',output_dir, SN_name + '_martinez_comparison.pdf'))   #sondos added: ('figures', to save the figure into the same direc
     ################################################
-    axs[0].scatter([], [], color='black', label=SN_name)
+
+    # Set y-axis limits
+    axs[0].set_ylim(40.5, 43.5)  # Bolometric luminosity
+    axs[1].set_ylim(1800, 11000)  # Velocity
+
+    SN_label = SN_name.replace('SN', 'SN ', 1)
+
+    axs[0].scatter([], [], color='black', label=SN_label)
     axs[0].plot([], [], color='purple', label="SNEmcee")
-    axs[0].plot([], [], color='orange', label="Martinez values on SNEmcee ")
+    axs[0].plot([], [], color='orange', label="Martinez et al. (2020) values in SNEmcee")
     axs[0].legend(fontsize=18, loc='upper right')
     axs[1].get_legend().remove()
     fig.savefig(os.path.join('figures',output_dir, SN_name + '_martinez_comparison_final.pdf'))
@@ -401,7 +427,7 @@ def lum_veloc_vs_martinez1(SN_name, results_dir, output_dir):   #(old version (j
     if 'VPH' in models.columns:  # Convert velocity from cm/s to km/s
         models['VPH'] = models['VPH'] / 1e5  # Convert from cm/s to km/s
 
-    axs[0].plot(models['TIME'], models['LOGL'], color='green', label='Martinez best-fit models')
+    axs[0].plot(models['TIME'], models['LOGL'], color='green', label='Martinez et al. (2020) best-fit models')
 
     velocity_data = models[models['TIME'] <= 125]
     axs[1].plot(velocity_data['TIME'], velocity_data['VPH'], color='green', label='Martinez Best-fit')
@@ -432,14 +458,27 @@ def lum_veloc_vs_martinez2(SN_name, results_dir, output_dir):
     pltsn.plot_result_fit(lum_veloc_with_csm_path, 'veloc', axs[1, 0], add_martinez=True)
     pltsn.plot_result_fit(lum_veloc_without_csm_path, 'veloc', axs[1, 1], add_martinez=True)
 
-    axs[1, 0].set_ylim(3000, 11000)
-    axs[1, 1].set_ylim(3000, 11000)
+    # Get SNEmcee values
+    args_with = pltsn.get_args_from_file(lum_veloc_with_csm_path, axs[1, 0], 'veloc', add_martinez=False)
+    sampler_with = args_with[2]
+    ranges_with = args_with[3]
+    results_text_with = pltsn.result_text_from_dict(pltsn.get_param_results_dict(sampler_with, ranges_with),
+                                                    ranges_with)
+
+    args_without = pltsn.get_args_from_file(lum_veloc_without_csm_path, axs[1, 1], 'veloc', add_martinez=False)
+    sampler_without = args_without[2]
+    ranges_without = args_without[3]
+    results_text_without = pltsn.result_text_from_dict(pltsn.get_param_results_dict(sampler_without, ranges_without),
+                                                       ranges_without)
+    # Set y-axis limits
+    axs[0, 0].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1, 0].set_ylim(3000, 11500)  # Velocity
 
     # Labels for each subplot
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=16)
-    axs[1, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=16)
-    axs[1, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
-    axs[1, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=16)
+    axs[1, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=16)
+    axs[1, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
+    axs[1, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
 
     axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)  # Adjust x and y positions
     axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)  # Same x position for consistency
@@ -453,11 +492,12 @@ def lum_veloc_vs_martinez2(SN_name, results_dir, output_dir):
     # Adding legends
     axs[0, 0].scatter([], [], color='black', label=SN_name)
     axs[0, 0].plot([], [], color='purple', label="SNEmcee with CSM")
-    axs[0, 0].plot([], [], color='orange', label="Martinez values on SNEmcee")
+    axs[0, 0].plot([], [], color='orange', label="Martinez et al. (2020) values in SNEmcee")
     axs[0, 0].legend(fontsize=14, loc='upper right')
+
     axs[0, 1].scatter([], [], color='black', label=SN_name)
     axs[0, 1].plot([], [], color='purple', label="SNEmcee without CSM")
-    axs[0, 1].plot([], [], color='orange', label="Martinez values on SNEmcee")
+    axs[0, 1].plot([], [], color='orange', label="Martinez et al. (2020) values in SNEmcee")
     axs[0, 1].legend(fontsize=14, loc='upper right')
 
     # Adding Martinez best-fit models
@@ -467,29 +507,41 @@ def lum_veloc_vs_martinez2(SN_name, results_dir, output_dir):
     if 'VPH' in models.columns:
         models['VPH'] = models['VPH'] / 1e5  # Convert from cm/s to km/s
 
-    axs[0,0].plot(models['TIME'], models['LOGL'], color='green', label='Martinez best-fit models')
-    axs[0,1].plot(models['TIME'], models['LOGL'], color='green', label='Martinez best-fit models')
+    axs[0,0].plot(models['TIME'], models['LOGL'], color='green', label='Martinez et al. (2020) best-fit models')
+    axs[0,1].plot(models['TIME'], models['LOGL'], color='green', label='Martinez et al. (2020) best-fit models')
     axs[0, 0].legend(fontsize=14, loc='upper right')
+    axs[0, 1].legend(fontsize=14, loc='upper right')
+
     velocity_data = models[models['TIME'] <= 125]
     axs[1, 0].plot(velocity_data['TIME'], velocity_data['VPH'], color='green', label='Martinez Best-fit')
     axs[1, 1].plot(velocity_data['TIME'], velocity_data['VPH'], color='green', label='Martinez Best-fit')
-    axs[0, 1].legend(fontsize=14, loc='upper right')
+
+    # SNEmcee values in bottom panels
+    axs[1, 0].legend(handles=[Line2D([0], [0], color='purple', label=results_text_with)], fontsize=10, loc='upper right')
+    axs[1, 1].legend(handles=[Line2D([0], [0], color='purple', label=results_text_without)], fontsize=10, loc='upper right')
+
     plt.tight_layout()
-    fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison_with_bestfit1.pdf'))
+    fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison_with_bestfit5.pdf'))
+
     axs[1, 0].get_legend().remove()
     axs[1, 1].get_legend().remove()
-    fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison_with_bestfit.pdf'))
+    fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison_with_bestfi6.pdf'))
 
     return fig
 
 
-def lum_veloc_vs_martinez3(SN_name, results_dir, output_dir):
+def lum_veloc_vs_martinez3(SN_name, results_dir, output_dir):   #paper
     import os
     import pandas as pd
     import matplotlib.pyplot as plt
 
     # Create subplots: 2 stacked vertically
-    fig, axs = plt.subplots(2, 1, sharex=True, figsize=(8, 12), gridspec_kw={'height_ratios': [2, 1.5]})
+    fig, axs = plt.subplots(2, 1, sharex=True, figsize=(10, 12), gridspec_kw={'height_ratios': [2, 1.5]})
+
+    # Use the same colors as in the corner plot
+    cmap = plt.cm.get_cmap('jet', 2)
+    without_csm_color = cmap(0)
+    with_csm_color = cmap(1)
 
     # File paths for with-CSM and without-CSM
     lum_veloc_with_csm_name = SN_name + '_lum-veloc_csm-with_normalizedFalse_TreshLumFalse'
@@ -498,65 +550,97 @@ def lum_veloc_vs_martinez3(SN_name, results_dir, output_dir):
     lum_veloc_without_csm_name = SN_name + '_lum-veloc_csm-without_normalizedFalse_TreshLumFalse'
     lum_veloc_without_csm_path = os.path.join(results_dir, lum_veloc_without_csm_name)
 
-    # Extract data from plot_result_fit (assuming it returns the line object or data)
+    # Plotting bolometric luminosity with CSM
+    n_before = len(axs[0].lines)
     pltsn.plot_result_fit(lum_veloc_with_csm_path, 'lum', axs[0], add_martinez=True)
-    pltsn.plot_result_fit(lum_veloc_without_csm_path, 'lum', axs[0], add_martinez=True)
+    with_csm_lum_lines = axs[0].lines[n_before:]
+
+    # Set the SNEmcee with-CSM models to the same red as in the corner plot
+    for line in with_csm_lum_lines:
+        if line.get_color() == 'purple':
+            line.set_color(with_csm_color)
+            line.set_linestyle('-')
+
+    # Plotting bolometric luminosity without CSM
+    n_before = len(axs[0].lines)
+    pltsn.plot_result_fit(lum_veloc_without_csm_path, 'lum', axs[0], add_martinez=False)
+    without_csm_lum_lines = axs[0].lines[n_before:]
+
+    # Set the SNEmcee without-CSM models to the same blue as in the corner plot
+    for line in without_csm_lum_lines:
+        if line.get_color() == 'purple':
+            line.set_color(without_csm_color)
+            line.set_linestyle('-')
+
+    # Plotting velocities with CSM
+    n_before = len(axs[1].lines)
     pltsn.plot_result_fit(lum_veloc_with_csm_path, 'veloc', axs[1], add_martinez=True)
-    pltsn.plot_result_fit(lum_veloc_without_csm_path, 'veloc', axs[1], add_martinez=True)
+    with_csm_veloc_lines = axs[1].lines[n_before:]
 
-    # Assign colors to ensure correct identification
-    with_csm_lum_line = axs[0].lines[-4]  # Assuming the order of addition is predictable
-    without_csm_lum_line = axs[0].lines[-3]
-    with_csm_vel_line = axs[1].lines[-4]
-    without_csm_vel_line = axs[1].lines[-3]
+    # Set the SNEmcee with-CSM models to the same red as in the corner plot
+    for line in with_csm_veloc_lines:
+        if line.get_color() == 'purple':
+            line.set_color(with_csm_color)
+            line.set_linestyle('-')
 
-    # Set colors for with-CSM and without-CSM
-    with_csm_lum_line.set_color('red')
-    without_csm_lum_line.set_color('blue')
-    with_csm_vel_line.set_color('red')
-    without_csm_vel_line.set_color('blue')
+    # Plotting velocities without CSM
+    n_before = len(axs[1].lines)
+    pltsn.plot_result_fit(lum_veloc_without_csm_path, 'veloc', axs[1], add_martinez=False)
+    without_csm_veloc_lines = axs[1].lines[n_before:]
 
-    # Adjust velocity limits for consistency
-    axs[1].set_ylim(3000, 11000)
+    # Set the SNEmcee without-CSM models to the same blue as in the corner plot
+    for line in without_csm_veloc_lines:
+        if line.get_color() == 'purple':
+            line.set_color(without_csm_color)
+            line.set_linestyle('-')
+
+    # Set y-axis limits
+    axs[0].set_ylim(41, 43.5)  # Bolometric luminosity
+    axs[1].set_ylim(3000, 11500)  # Velocity
 
     # Add labels
-    axs[0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=20)
-    axs[1].set_ylabel('Expansion Velocity (km/s)', fontsize=20)
-    axs[1].set_xlabel('Rest-Frame Days From Discovery', fontsize=20)
+    axs[0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=22)
+    axs[1].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=22)
+    axs[1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=22)
 
-    axs[0].yaxis.set_label_coords(-0.11, 0.5)  # Adjust x and y positions for top plot
-    axs[1].yaxis.set_label_coords(-0.11, 0.5)  # Same x position for bottom plot
+    axs[0].yaxis.set_label_coords(-0.11, 0.5)
+    axs[1].yaxis.set_label_coords(-0.11, 0.5)
 
     # Enlarge x and y ticks for both subplots
     for ax in axs:
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.tick_params(axis='both', which='minor', labelsize=14)
 
-    # Add legends
-    axs[0].scatter([], [], color='black', label=SN_name)
-    axs[0].plot([], [], color='red', label="SNEmcee with CSM")
-    axs[0].plot([], [], color='blue', label="SNEmcee without CSM")
-    axs[0].plot([], [], color='orange', label="Martinez values on SNEmcee")
-    axs[0].legend(fontsize=14, loc='upper right')
-
-    # Adding Martinez best-fit models
+    # Adding Martinez et al. (2020) best-fit models
     models_path = os.path.join('results', 'martinez_bestfit_models', f"{SN_name}.csv")
     models = pd.read_csv(models_path)
 
-    if 'VPH' in models.columns:  # Convert velocity from cm/s to km/s
-        models['VPH'] = models['VPH'] / 1e5  # Convert to km/s
+    if 'VPH' in models.columns:
+        models['VPH'] = models['VPH'] / 1e5  # Convert from cm/s to km/s
 
-    axs[0].plot(models['TIME'], models['LOGL'], color='green', label='Martinez Best-fit Models')
+    axs[0].plot(models['TIME'], models['LOGL'], color='green', label='_nolegend_')
+
     velocity_data = models[models['TIME'] <= 125]
-    axs[1].plot(velocity_data['TIME'], velocity_data['VPH'], color='green', label='Martinez Best-fit')
+    axs[1].plot(velocity_data['TIME'], velocity_data['VPH'], color='green', label='_nolegend_')
 
-    axs[0].legend(fontsize=14, loc='upper right')
+    # Add space between SN and the year for the legend
+    SN_label = SN_name.replace('SN', 'SN ', 1)
 
-    # Save intermediate figure
-    fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison.pdf'))
+    # Adding legend
+    axs[0].plot([], [], color=with_csm_color, linestyle='-', label='SNEmcee with CSM')
+    axs[0].plot([], [], color=without_csm_color, linestyle='-', label='SNEmcee without CSM')
+    axs[0].plot([], [], color='orange', label='Martinez et al. (2020) values in SNEmcee')
+    axs[0].plot([], [], color='green', label='Martinez et al. (2020) best-fit models')
+    axs[0].scatter([], [], color='black', label=SN_label + ' data (Martinez et al. 2020)')
+    axs[0].legend(fontsize=16, loc='upper right')
 
-    # Add final touches and save the final figure
-    axs[1].get_legend().remove()  # Remove bottom legend
+    # Remove bottom legend
+    if axs[1].get_legend() is not None:
+        axs[1].get_legend().remove()
+
+    plt.tight_layout()
+
+    # Save final figure
     fig.savefig(os.path.join('figures', output_dir, SN_name + '_martinez_comparison_with_bestfit.pdf'))
 
     return fig
@@ -585,10 +669,10 @@ def lum_veloc_vs_martinez(SN_name, results_dir, output_dir):
     axs[1, 1].set_ylim(5000, 12000)
 
     # Labels for each subplot
-    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg/s)', fontsize=16)
-    axs[1, 0].set_ylabel('Expansion Velocity (km/s)', fontsize=16)
-    axs[1, 0].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
-    axs[1, 1].set_xlabel('Rest-Frame Days From Discovery', fontsize=16)
+    axs[0, 0].set_ylabel('Log Bolometric Luminosity (erg ${s}^{-1}$)', fontsize=16)
+    axs[1, 0].set_ylabel('Expansion Velocity (km ${s}^{-1}$)', fontsize=16)
+    axs[1, 0].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
+    axs[1, 1].set_xlabel('Rest-Frame Days Relative to Explosion', fontsize=16)
 
     axs[0, 0].yaxis.set_label_coords(-0.11, 0.5)  # Adjust x and y positions
     axs[1, 0].yaxis.set_label_coords(-0.11, 0.5)  # Same x position for consistency
@@ -698,7 +782,7 @@ def main(argv):
     elif type_fig == 'lum-veloc-twostep_comparison':
         lum_veloc_onestep_vs_twostep(SN_name, normalization, LumThreshold, res_dir, step_dir)
     elif type_fig == 'martinez_comparison':
-        lum_veloc_vs_martinez(SN_name, res_dir, output_dir)
+        lum_veloc_vs_martinez1(SN_name, res_dir, output_dir)
     else:
         print('figure type (-f) should be csm_comparison, lum-mag-veloc_comparison, lum-veloc-normalized_comparison, '
               'lum-veloc-twostep_comparison,lum-mag-veloc-Tthresh_comparison, martinez_comparison, or any combination of lum, mag and veloc separated by'

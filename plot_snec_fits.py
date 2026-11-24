@@ -16,7 +16,6 @@ colors = {'u': 'indigo', 'g': 'green', 'r': 'red', 'i': 'dimgrey', 'z': 'black',
           'B': 'blue', 'V': 'darkviolet', 'R': 'darkorange', 'I': 'cyan'}
 
 
-
 def add_likelihood_to_file(model_name, fit_type, likeli, output_dir):
     filepath = os.path.join(output_dir, 'log_likelihoods.txt')
     if not os.path.exists(filepath):
@@ -101,12 +100,12 @@ def add_model_martinez(SN_name, ranges_dict, x_data, y_data, dy_data, fig_type, 
     requested = [results_row[a] for a in ['Mzams','Ni','E','R','K','Mix','S','T']]
     print(requested)
     S = requested[6]
-    T = requested[7]
-    data_x_moved = x_data - T
-    x_plotting = np.linspace(-T, 200 - T, 2001)
+    t = requested[7]
+    data_x_moved = x_data - t
+    x_plotting = np.linspace(-t, 200 - t, 2001)
     # Restrict x_plotting to the range of x_data for velocity
     #x_plotting_veloc = x_plotting[x_plotting <= x_data.max()] (עד הדאטא)
-    x_plotting_veloc = x_plotting[x_plotting <=125]
+    x_plotting_veloc = x_plotting[x_plotting <= 125]
 
     y_fit_plotting = mcmc_snec.interp_yfit(requested, ranges_dict, fig_type, x_plotting)
     y_fit_on_data_times = mcmc_snec.interp_yfit(requested, ranges_dict, fig_type, data_x_moved)
@@ -302,7 +301,21 @@ def overlay_corner_plot(result_paths_list, output_dir, name_list, filename):
                                             skiprows=(burn_in - 1) * (n_walkers))
         ranges_dicts_list.append(ranges_dict)
         flat_sampler_list.append(flat_sampler_noburnin)
-    labels = list(ranges_dicts_list[0].keys())
+    #labels = list(ranges_dicts_list[0].keys())
+    #### adding UNITS to the corner plots:
+    raw_labels = list(ranges_dicts_list[0].keys())
+    label_map = {
+        "t": r"$t$ (d)",
+        "Mzams": r"$M_{\mathrm{ZAMS}}\,(M_\odot)$",
+        "K": r"$K\,(10^{17}\,\mathrm{g\,cm^{-1}})$",
+        "R": r"$\Delta R_{\rm CSM}\,(R_\odot)$",
+        "E": r"$E\,(10^{51}\,\mathrm{erg})$",
+        "Ni": r"$Ni\,(M_\odot)$",
+        "Mix": r"$Mix\,(M_\odot)$",
+        "S": r"$S$",
+    }
+    labels = [label_map.get(lab, lab) for lab in raw_labels]
+    #####
     corner_range = [1.] * len(labels)
     color_corner.overlaid_corner(
         flat_sampler_list,

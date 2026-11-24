@@ -50,7 +50,7 @@ def load_model(Mzams, Ni, E, R, K, Mix, data_type):
         else:
             snec_model = pd.read_csv(modelpath)
             time_col = snec_model['t_from_discovery'] / 86400  # sec to days
-            interp_days = np.linspace(0, 200, 2001)   #here(0, 250, 2001)
+            interp_days = np.linspace(0, 200, 2001)
             snec_model = np.interp(interp_days, time_col, snec_model['Lum'])
             return snec_model
     elif data_type == 'veloc':
