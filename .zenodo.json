@@ -1,0 +1,38 @@
+{
+  "title": "SNEmcee: MCMC Fitting of Numerical Progenitor and Explosion Models to Type IIP Supernova Light Curves and Velocities",
+  "description": "SNEmcee is a Python tool that uses Markov Chain Monte Carlo (MCMC) to fit numerical progenitor and explosion models to Type IIP supernova light curves and velocities.",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Mohsen-Tanev, Sondos",
+      "affiliation": "Tel Aviv University",
+      "orcid": "0009-0006-7842-2125"
+    },
+    {
+      "name": "Shitrit, Noi",
+      "affiliation": "Tel Aviv University",
+      "orcid": "0000-0001-9511-6054"
+    },
+    {
+      "name": "Bracha, Shahar",
+      "affiliation": "Massachusetts Institute of Technology",
+      "orcid": "0000-0001-5320-3352"
+    },
+    {
+      "name": "Arcavi, Iair",
+      "affiliation": "Tel Aviv University",
+      "orcid": "0000-0001-7090-4898"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "astrophysics",
+    "supernovae",
+    "Type IIP supernovae",
+    "MCMC",
+    "SNEC",
+    "hydrodynamics",
+    "Python"
+  ]
+}
