@@ -46,7 +46,7 @@ SNEmcee requires the following Python libraries:
 Install the required dependencies using:
 
 ```bash
-pip install corner emcee pandas numpy scipy matplotlib
+pip install -r requirements.txt
 ```
 
 ## Input supernova data

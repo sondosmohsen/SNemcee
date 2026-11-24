@@ -23,7 +23,7 @@ def overlaid_corner(samples_list, sample_labels, corner_range, param_labels, out
     n = len(samples_list)
     _, ndim = samples_list[0].shape
     max_len = max([len(s) for s in samples_list])
-    cmap = plt.cm.get_cmap('jet', n)
+    cmap = plt.get_cmap('jet', n)
     colors = [cmap(i) for i in range(n)]
     fig = corner.corner(
         samples_list[0],

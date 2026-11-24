@@ -7,7 +7,7 @@ import pandas as pd
 import os
 import csv
 from scipy.stats import chi2
-from numpy import trapz
+from scipy.integrate import trapezoid
 import models as mod
 import datetime
 matplotlib.use('Agg')
@@ -39,7 +39,7 @@ def polyfit_to_distribution(array_walker_results, res_dir):
     bin_widths = np.diff(bin_edges)
     x = bin_edges[:-1] + (bin_widths / 2)
     y = counts
-    area = trapz(y, dx=bin_widths[0])
+    area = trapezoid(y, dx=bin_widths[0])
     y = y / area
     polymod = np.polynomial.Polynomial.fit(x, y, deg=12)
     ax.plot(x, y, color='black')
@@ -318,8 +318,8 @@ def S_prior(SN_name):
     # calculate range for the scaling parameter, which is derived from the uncertainty in distance
     # (in Mpc, provided in the table distances.csv')
     distances = pd.read_csv(os.path.join('SN_data', 'distances.csv'))
-    distance = float(distances.loc[distances['SN_name'] == SN_name]['distance'])
-    distance_err = float(distances.loc[distances['SN_name'] == SN_name]['distance_err'])
+    distance = float(distances.loc[distances['SN_name'] == SN_name]['distance'].item())
+    distance_err = float(distances.loc[distances['SN_name'] == SN_name]['distance_err'].item())
     sigma_S = 2 * distance_err / distance
     S_range = [1.0 - 3 * sigma_S, 1.0 + 3 * sigma_S]
     return S_range, sigma_S

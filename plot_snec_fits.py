@@ -22,7 +22,7 @@ def add_likelihood_to_file(model_name, fit_type, likeli, output_dir):
         f = pd.DataFrame({'model_name':[], 'fit_type':[], 'log_likelihood':[]})
         f.to_csv(filepath)
     f = pd.read_csv(filepath, index_col=0)
-    f = f.append(pd.DataFrame({'model_name':model_name, 'fit_type':fit_type, 'log_likelihood':likeli},index=[0]),ignore_index=True)
+    f = pd.concat([f, pd.DataFrame({'model_name':model_name, 'fit_type':fit_type, 'log_likelihood':likeli},index=[0])],ignore_index=True)
     f.to_csv(filepath)
 
 
@@ -369,7 +369,6 @@ def chain_plots(result_path, output_dir, first_stage_steps=None):
             plt.axvline(x=first_stage_steps, color='black')
             plt.axvspan(first_stage_steps, first_stage_steps+burn_in, alpha=0.1, color='grey')
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, key+'.png'))
         plt.savefig(os.path.join(output_dir, key + '.pdf'))
 
 

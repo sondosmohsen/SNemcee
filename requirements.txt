@@ -1,0 +1,6 @@
+corner
+emcee
+pandas
+numpy
+scipy
+matplotlib
