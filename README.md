@@ -27,6 +27,7 @@
 </div>
 
 ## Contents
+- [Installation](#installation)
 - [Dependencies](#dependencies)
 - [Input supernova data](#input-supernova-data)
 - [SNEC model grid](#snec-model-grid)
@@ -37,6 +38,15 @@
 - [Running script for comparison plots](#running-script-for-comparison-plots)
 - [Plotting outputs](#plotting-outputs)
 - [Citation](#citation)
+
+## Installation
+
+Clone the SNEmcee repository:
+
+```bash
+git clone https://github.com/sondosmohsen/SNemcee.git
+cd SNemcee
+```
 
 ## Dependencies
 SNEmcee requires the following Python libraries:
